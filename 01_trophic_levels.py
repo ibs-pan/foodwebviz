@@ -2,7 +2,6 @@
 # ---
 # jupyter:
 #   jupytext:
-#     formats: ipynb,md
 #     text_representation:
 #       extension: .py
 #       format_name: light
@@ -123,3 +122,8 @@ import plotly.figure_factory as ff
 fig = ff.create_dendrogram(np.array([[x[2]] for x in trophic_flows]), orientation='left', labels=[f'{x[0]} -> {x[1]}' for x in trophic_flows])
 fig.update_layout(width=800, height=500)
 fig.show()
+# -
+
+
+
+

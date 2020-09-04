@@ -93,6 +93,12 @@ def prepare_data(net, normalization=None, add_external_flows=False):
     heat_data['to'] = add_not_alive_mark(heat_data['to'], names_mapper)
     heat_data = heat_data.merge(node_df[['Names', 'trophic', 'Biomass']], left_on='from', right_on='Names', how='left')
 
+    # not all normalization methods make sense when this is True
+    if add_external_flows:
+        external_flows = pd.DataFrame(net.getExternalFlows(), columns=flow_cols)
+        external_flows['from'] = add_not_alive_mark(external_flows['from'], names_mapper)
+        heat_data = pd.concat([heat_data, external_flows]).fillna(0)
+    
     if normalization == 'all':
         heat_data['weights'] = net.getNormInternFlows()
     elif normalization == 'biomass':
@@ -102,11 +108,11 @@ def prepare_data(net, normalization=None, add_external_flows=False):
     elif normalization == 'inputs':
         tmp_df = heat_data.merge(heat_data.groupby('to').sum().reset_index(), left_on='from', right_on='to')
         heat_data['weights'] = tmp_df.weights_x / tmp_df.weights_y
-    if add_external_flows:
-        external_flows = pd.DataFrame(net.getExternalFlows(), columns=flow_cols)
-        external_flows['from'] = add_not_alive_mark(external_flows['from'], names_mapper)
+    # if add_external_flows:
+     #   external_flows = pd.DataFrame(net.getExternalFlows(), columns=flow_cols)
+     #   external_flows['from'] = add_not_alive_mark(external_flows['from'], names_mapper)
     
-        heat_data = pd.concat([heat_data, external_flows]).fillna(0)
+     #   heat_data = pd.concat([heat_data, external_flows]).fillna(0)
     return node_df, heat_data
 
 def get_trophic_heatmap(node_df):
@@ -190,10 +196,29 @@ def show_heatmap(net, normalization='all', show_trophic_layer=True, add_external
     fig.update_yaxes(showspikes=True, spikesnap="cursor", spikemode="across",spikethickness=0.5)
     fig.show()
 
-show_heatmap(food_webs[0], normalization='inputs', show_trophic_layer=True, add_external_flows=False)
-
 
 # -
+
+# ### no normalization
+
+show_heatmap(food_webs[0], normalization=None, show_trophic_layer=True, add_external_flows=True)
+
+# ### biomass
+
+show_heatmap(food_webs[0], normalization='biomass', show_trophic_layer=True, add_external_flows=False)
+
+# ### log
+
+show_heatmap(food_webs[0], normalization='log', show_trophic_layer=True, add_external_flows=False)
+
+# ### inpouts
+
+show_heatmap(food_webs[0], normalization='inputs', show_trophic_layer=True, add_external_flows=False)
+
+# ### external flows
+
+show_heatmap(food_webs[0], normalization='inputs', show_trophic_layer=True, add_external_flows=True)
+
 
 # ## heatmap for nodes
 
