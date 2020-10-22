@@ -49,8 +49,7 @@ def readFW_SCOR(scor_path):
         flowMatrix.index = net.Names
         flowMatrix.columns = net.Names
 
-        return FoodWeb(title=title, flowMatrix=flowMatrix,
-                       n=n, n_living=n_living, nodeDF=net)
+        return FoodWeb(title=title, flowMatrix=flowMatrix, nodeDF=net)
 
 
 def writeXLS(fw, filename):

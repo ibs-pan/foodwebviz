@@ -40,7 +40,7 @@ for web in food_webs:
 # +
 def get_trophic_level(net, name):
     ''' returns rounded trophic level for name '''
-    return net.nodeDF[net.nodeDF.Names == name].trophic.values[0]
+    return net.nodeDF[net.nodeDF.index == name].trophic.values[0]
 
 def get_trophic_flows(net):
     ''' 
@@ -60,21 +60,37 @@ def get_trophic_flows(net):
 
 get_trophic_flows(food_webs[0])
 
-
 # ## Heatmap
+
+# +
+from collections import defaultdict
+
+def get_trophic_flows(net):
+    graph = net.getGraph()
+
+    trophic_flows = defaultdict(float)
+    for n, n_trophic in set(graph.nodes(data='TrophicLevel')):
+        for m, m_trophic in set(graph.nodes(data='TrophicLevel')):
+            weight = graph.get_edge_data(n, m, default=0)
+            if weight != 0:
+                trophic_flows[(round(n_trophic), round(m_trophic))] += weight['weight']
+    return pd.DataFrame([(x, y, w) for (x, y), w in trophic_flows.items()], columns=['from', 'to', 'weights'])
+
+
+# -
 
 def draw_heatmap(net, log_scale=False):
     '''
     Draws heatmap of flows between trophic levels
     '''
-    tf_pd = pd.DataFrame(get_trophic_flows(net), columns=['from', 'to', 'weights'])
+    tf_pd = get_trophic_flows(net)
     if log_scale:
         tf_pd['weights'] = np.log(tf_pd.weights)
     tf_pd = tf_pd.pivot('from', 'to', 'weights')
-    ax = sns.heatmap(tf_pd, annot=True, cmap="YlGnBu", fmt=".2f")
+    ax = sns.heatmap(tf_pd, annot=True, cmap="YlGnBu")
 
 
-draw_heatmap(food_webs[0])
+draw_heatmap(food_webs[0])  
 
 draw_heatmap(food_webs[0], log_scale=True)
 
@@ -82,7 +98,7 @@ draw_heatmap(food_webs[0], log_scale=True)
 # ## Fows distribution
 
 def show_trophic_flows_distribution(net, normalize=False):
-    tf_pd = pd.DataFrame(get_trophic_flows(net), columns=['from', 'to', 'weights'])
+    tf_pd = tf_pd = get_trophic_flows(net)
     tf_pd['to'] = tf_pd['to'].astype(str)
 
     return alt.Chart(tf_pd).mark_bar().encode(
@@ -100,30 +116,3 @@ def show_trophic_flows_distribution(net, normalize=False):
 show_trophic_flows_distribution(food_webs[0])
 
 show_trophic_flows_distribution(food_webs[0], normalize=True)
-
-# ## Other
-
-trophic_flows = get_trophic_flows(food_webs[0])
-
-# +
-import plotly.graph_objects as go
-
-hist_pd = pd.DataFrame([(f'{x[0]} -> {x[1]}', x[2]) for x in trophic_flows], columns=['flow', 'weights'])
-
-fig = go.Figure()
-fig.add_trace(go.Histogram(histfunc="sum", y=hist_pd['weights'], x=hist_pd['flow'], name="sum"))
-fig.show()
-
-# +
-import plotly.figure_factory as ff
-
-
-# TODO funkcja z tego: miara podobieństwa, dane wejściowe różne
-fig = ff.create_dendrogram(np.array([[x[2]] for x in trophic_flows]), orientation='left', labels=[f'{x[0]} -> {x[1]}' for x in trophic_flows])
-fig.update_layout(width=800, height=500)
-fig.show()
-# -
-
-
-
-
