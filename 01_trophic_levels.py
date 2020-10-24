@@ -19,8 +19,9 @@ import numpy as np
 import pandas as pd
 import seaborn as sns
 from foodwebs.foodweb import FoodWeb
-from foodwebs.foodweb_io import readFW_SCOR
+from foodwebs.foodweb_io import read_from_SCOR
 import networkx as nx
+from collections import defaultdict
 
 import matplotlib.pyplot as pltś
 import pylab
@@ -30,35 +31,12 @@ rcParams['figure.figsize'] = 12, 8
 
 # +
 import glob
-food_webs = [readFW_SCOR(net_path) for net_path in glob.glob('./data/*')]
+food_webs = [read_from_SCOR(net_path) for net_path in glob.glob('./data/*')]
 
 for web in food_webs:
     print(f'{web.title[:30]} --> {web.n}, {web.n_living}')
-    web.nodeDF['trophic'] = round(web.nodeDF.TrophicLevel)
-
-
-# +
-def get_trophic_level(net, name):
-    ''' returns rounded trophic level for name '''
-    return net.nodeDF[net.nodeDF.index == name].trophic.values[0]
-
-def get_trophic_flows(net):
-    ''' 
-    returns sum of all flows weights between trophic levels 
-    '''
-    levels = sorted(net.nodeDF.trophic.unique())
-    trophic_flows = {(x,y): 0 for x in levels for y in levels}
-    
-    for flow in net.getFlows(True):
-        trophic_flows[(get_trophic_level(net, flow[0]), get_trophic_level(net, flow[1]))] += flow[2]
-
-    # filter out zeros
-    return [(x[0], x[1], float("{:.5f}".format(y))) for x, y in trophic_flows.items() if y != 0]
-
-
+    web.node_df['trophic'] = round(web.node_df.TrophicLevel)
 # -
-
-get_trophic_flows(food_webs[0])
 
 # ## Heatmap
 
@@ -66,7 +44,7 @@ get_trophic_flows(food_webs[0])
 from collections import defaultdict
 
 def get_trophic_flows(net):
-    graph = net.getGraph()
+    graph = net.get_graph()
 
     trophic_flows = defaultdict(float)
     for n, n_trophic in set(graph.nodes(data='TrophicLevel')):

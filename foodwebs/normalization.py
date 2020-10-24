@@ -2,18 +2,6 @@ import numpy as np
 import networkx as nx
 
 
-def flows_normalization(graph_view, norm_type):
-    if norm_type == 'biomass':
-        return biomass_normalization(graph_view)
-    elif norm_type == 'log':
-        return log_normalization(graph_view)
-    elif norm_type == 'diet':
-        return diet_normalization(graph_view)
-    elif norm_type == 'tst':
-        return tst_normalization(graph_view)
-    return graph_view
-
-
 def diet_normalization(graph_view):
     '''
     In this normalization method, each weight is divided by node's diet,
@@ -46,4 +34,18 @@ def tst_normalization(graph_view):
     TST = sum([x[2] for x in graph_view.edges(data='weight')])
     nx.set_edge_attributes(graph_view, {(e[0], e[1]): {'weight': e[2] / TST}
                                         for e in graph_view.edges(data='weight')})
+    return graph_view
+
+
+NORMALIZATION = {
+    'biomass': biomass_normalization,
+    'log': log_normalization,
+    'diet': diet_normalization,
+    'tst': tst_normalization
+}
+
+
+def flows_normalization(graph_view, norm_type):
+    if norm_type in NORMALIZATION:
+        return NORMALIZATION[norm_type](graph_view)
     return graph_view

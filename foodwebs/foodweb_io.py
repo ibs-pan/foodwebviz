@@ -2,7 +2,7 @@ import pandas as pd
 from .foodweb import FoodWeb
 
 
-def readFW_SCOR(scor_path):
+def read_from_SCOR(scor_path):
     '''
     Reads a TXT file in the SCOR format and returns a FoodWeb object
 
@@ -42,23 +42,10 @@ def readFW_SCOR(scor_path):
             net[col] = [float(x.split(' ')[1])
                         for x in lines[(i + 1) * n + i: (i + 2) * n + i]]
 
-        flowMatrix = pd.DataFrame(index=range(1, n+1), columns=range(1, n+1))
+        flow_matrix = pd.DataFrame(index=range(1, n+1), columns=range(1, n+1))
         for line in [x.split(' ') for x in lines[(i + 2) * n + i + 1: -1]]:
-            flowMatrix.at[int(line[0]), int(line[1])] = float(line[2])
-        flowMatrix = flowMatrix.fillna(0.0)
-        flowMatrix.index = net.Names
-        flowMatrix.columns = net.Names
-
-        return FoodWeb(title=title, flowMatrix=flowMatrix, nodeDF=net)
-
-
-def writeXLS(fw, filename):
-    "Save the FoodWeb as an XLS file - spreadsheets."
-    print(f'Saving FoodWeb with title {fw.title}')
-    writer = pd.ExcelWriter(filename,  encoding='utf-8')
-    pd.DataFrame(index=[filename.strip('.xls').split('/')[-1]],
-                 data=fw.title,
-                 columns=["Title"]).to_excel(writer, sheet_name="Title")
-    fw.nodeDF.to_excel(writer, sheet_name="Node properties")
-    fw.flowMatrix.to_excel(writer, sheet_name="Internal flows")
-    writer.save()
+            flow_matrix.at[int(line[0]), int(line[1])] = float(line[2])
+        flow_matrix = flow_matrix.fillna(0.0)
+        flow_matrix.index = net.Names
+        flow_matrix.columns = net.Names
+        return FoodWeb(title=title, flow_matrix=flow_matrix, node_df=net)
