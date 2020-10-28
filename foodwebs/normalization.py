@@ -1,3 +1,4 @@
+
 import numpy as np
 import networkx as nx
 
@@ -16,7 +17,7 @@ def diet_normalization(graph_view):
 
 
 def log_normalization(graph_view):
-    nx.set_edge_attributes(graph_view, {(e[0], e[1]): {'weight': np.log(e[2])}
+    nx.set_edge_attributes(graph_view, {(e[0], e[1]): {'weight': np.log10(e[2])}
                                         for e in graph_view.edges(data='weight')})
     return graph_view
 

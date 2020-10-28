@@ -3,6 +3,7 @@ import pandas as pd
 import networkx as nx
 
 from .normalization import flows_normalization
+from .visualization import show_heatmap
 
 
 class FoodWeb():
@@ -122,6 +123,12 @@ class FoodWeb():
             # fails with negative trophic levels = some problems
             np.linalg.pinv(A)
         return inflow_pd.data_trophic_level.values
+
+    def show_heatmap(self, normalization=None, show_trophic_layer=True, add_external_flows=False, switch_axes=False):
+        show_heatmap(self,
+                     normalization=normalization,
+                     show_trophic_layer=show_trophic_layer,
+                     add_external_flows=add_external_flows)
 
     def writeXLS(self, filename):
         '''Save the FoodWeb as an XLS file - spreadsheets.'''
