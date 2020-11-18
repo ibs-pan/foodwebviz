@@ -1,9 +1,13 @@
 import numpy as np
 import pandas as pd
 import networkx as nx
+import plotly.express as px
+from pyvis.network import Network
 
 from .normalization import flows_normalization
 from .visualization import show_heatmap
+
+NOT_ALIVE_MARK = '\u2717'
 
 
 class FoodWeb():
@@ -83,7 +87,7 @@ class FoodWeb():
         '''
         Creates dictionary which special X character to names, which are not alive
         '''
-        return {name: f'\u2717 {name}' for name in self.node_df[~self.node_df.IsAlive].index.values}
+        return {name: f'{NOT_ALIVE_MARK} {name}' for name in self.node_df[~self.node_df.IsAlive].index.values}
 
     def get_norm_node_prop(self):
         num_node_prop = self.node_df[["Biomass", "Import", "Export", "Respiration"]]
@@ -124,11 +128,44 @@ class FoodWeb():
             np.linalg.pinv(A)
         return inflow_pd.data_trophic_level.values
 
-    def show_heatmap(self, normalization=None, show_trophic_layer=True, add_external_flows=False, switch_axes=False):
+    def show_heatmap(self, normalization=None,
+                     show_trophic_layer=True,
+                     add_external_flows=False,
+                     switch_axes=False):
         show_heatmap(self,
                      normalization=normalization,
                      show_trophic_layer=show_trophic_layer,
                      add_external_flows=add_external_flows)
+
+    def show_network_for_nodes(self, nodes,
+                               notebook=True,
+                               height="800px",
+                               width="100%",
+                               node_distance=200,
+                               central_gravity=0.0,
+                               spring_length=200,
+                               spring_strength=0.001):
+        nt = Network(notebook=notebook,  height=height, width=width, directed=True, layout=True)
+        g = nx.Graph(self.get_graph(mark_alive_nodes=True))
+        g = g.edge_subgraph([x for x in g.edges() if x[0].replace(
+            f'{NOT_ALIVE_MARK} ', '') in nodes or x[1].replace(f'{NOT_ALIVE_MARK} ', '') in nodes])
+
+        a = {x: {'color': px.colors.sequential.Emrld[int(attrs['TrophicLevel'])],
+                 'level': attrs['TrophicLevel'],
+                 'title': f'{x}<br> TrophicLevel: {attrs["TrophicLevel"]:.2f}',
+                 'shape': 'box'} for x, attrs in g.nodes(data=True)}
+        nx.set_node_attributes(g, a)
+
+        nt.from_nx(g)
+        nt.hrepulsion(
+            node_distance=node_distance,
+            central_gravity=central_gravity,
+            spring_length=spring_length,
+            spring_strength=spring_strength,
+            damping=0.09
+        )
+        nt.show_buttons(filter_="physics")
+        return nt.show("nx.html")
 
     def writeXLS(self, filename):
         '''Save the FoodWeb as an XLS file - spreadsheets.'''

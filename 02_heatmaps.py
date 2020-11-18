@@ -16,7 +16,6 @@
 import math
 import numpy as np
 import pandas as pd
-import seaborn as sns
 from foodwebs.foodweb import FoodWeb
 from foodwebs.foodweb_io import read_from_SCOR
 from foodwebs.normalization import flows_normalization
@@ -43,7 +42,7 @@ for web in food_webs:
 
 # ### no normalization
 
-food_webs[0].show_heatmap(normalization='log', show_trophic_layer=True, add_external_flows=False)
+food_webs[2].show_heatmap(normalization='log', show_trophic_layer=True, add_external_flows=False)
 
 food_webs[0].show_heatmap(normalization=None, show_trophic_layer=True, add_external_flows=True, switch_axes=False)
 

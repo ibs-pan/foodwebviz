@@ -25,6 +25,14 @@ rcParams['figure.figsize'] = 12, 8
 
 # ## Heatmap
 
+# +
+import glob
+food_webs = [read_from_SCOR(net_path) for net_path in glob.glob('./data/*')]
+
+for web in food_webs:
+    print(f'{web.title[:30]} --> {web.n}, {web.n_living}')
+# -
+
 draw_trophic_flows_heatmap(food_webs[0], log_scale=True)
 
 # ## Fows distribution
