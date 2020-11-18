@@ -138,6 +138,7 @@ class FoodWeb():
                      add_external_flows=add_external_flows)
 
     def show_network_for_nodes(self, nodes,
+                               file_name='food_web.html',
                                notebook=True,
                                height="800px",
                                width="100%",
@@ -164,8 +165,8 @@ class FoodWeb():
             spring_strength=spring_strength,
             damping=0.09
         )
-        nt.show_buttons(filter_="physics")
-        return nt.show("nx.html")
+        nt.show_buttons(filter_='physics')
+        return nt.show(file_name)
 
     def writeXLS(self, filename):
         '''Save the FoodWeb as an XLS file - spreadsheets.'''
