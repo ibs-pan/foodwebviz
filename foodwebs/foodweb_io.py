@@ -24,6 +24,12 @@ def read_from_SCOR(scor_path):
       flows ((Victoria's S)^T)  // line -> matrix element
       -1 -1
       ----------------------------------------------------------
+
+    Parameters:
+    scor_path - file path
+
+    Returns:
+    foodweb.FoodWeb
     '''
     with open(scor_path, 'r', encoding='utf-8') as f:
         title = f.readline().strip()

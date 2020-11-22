@@ -29,12 +29,17 @@ class FoodWeb():
         self.n = len(self.node_df)
         self.n_living = len(self.node_df[self.node_df.IsAlive])
 
-        # calculate trophic levels
         if len(flow_matrix) > 1:
             self.node_df['TrophicLevel'] = self._calculate_trophic_levels()
         self._graph = self._init_graph()
 
     def _init_graph(self):
+        '''
+        Initialized networkx graph using adjacency matrix.
+
+        Returns:
+        networkx.DiGraph
+        '''
         graph = nx.from_pandas_adjacency(self.get_flow_matrix(boundary=True),  create_using=nx.DiGraph)
         nx.set_node_attributes(graph, self.node_df.to_dict(orient='index'))
 
@@ -47,6 +52,18 @@ class FoodWeb():
         return graph
 
     def get_graph(self, boundary=False, mark_alive_nodes=False, normalization=None):
+        '''
+        Allows access to networkx representation of foodweb.
+
+        Parameters:
+        boundary - add boundary flows (Import, Export, Repiration) to the graph
+        mark_alive_nodes - nodes, which are not alive will have additional X mark near their name
+        normalization - additional normalization method to apply on graph edges.
+            Avaiable options are: diet, log, biomass, tst
+
+        Returns:
+        view of networkx.DiGraph
+        '''
         exclude_nodes = [] if boundary else ['Import', 'Export', 'Respiration']
 
         g = nx.restricted_view(self._graph.copy(), exclude_nodes, [])
@@ -56,11 +73,31 @@ class FoodWeb():
         return g
 
     def get_flows(self, boundary=False, mark_alive_nodes=False, normalization=None):
-        '''Function returns a long dataframe of all internal flows'''
+        '''
+        Returns a dataframe of all internal flows in a form [from, to, weight]
+
+        Parameters:
+        boundary - add boundary flows (Import, Export, Repiration) to the graph
+        mark_alive_nodes - nodes, which are not alive will have additional X mark near their name
+        normalization - additional normalization method to apply on graph edges.
+            Avaiable options are: diet, log, biomass, tst
+
+        Returns:
+        list of tuples
+
+        '''
         return self.get_graph(boundary, mark_alive_nodes, normalization).edges(data=True)
 
     def get_flow_matrix(self, boundary=False):
-        '''Returns the flow matrix including the boundary flows as the last row and column'''
+        '''
+        Returns the flow (adjacency) matrix.
+
+        Parameters:
+        boundary - add boundary flows (Import, Export, Repiration) to the matrix
+
+        Returns:
+        pd.DataFrame
+        '''
         if not boundary:
             return self.flow_matrix
 
@@ -76,16 +113,20 @@ class FoodWeb():
             .fillna(0.0))
 
     def get_links_number(self):
-        '''Returns the number of nonzero system links'''
+        '''
+        Returns the number of nonzero system links
+        '''
         return self.get_graph(False).number_of_edges()
 
     def get_flow_sum(self):
-        "Returns the sum of ALL flows"
+        '''
+        Returns the sum of ALL flows
+        '''
         return self.get_flow_matrix(boundary=True).sum()
 
     def _is_alive_mapping(self):
         '''
-        Creates dictionary which special X character to names, which are not alive
+        Creates dictionary which special X mark to names, which are not alive
         '''
         return {name: f'{NOT_ALIVE_MARK} {name}' for name in self.node_df[~self.node_df.IsAlive].index.values}
 
@@ -94,7 +135,9 @@ class FoodWeb():
         return(num_node_prop.div(num_node_prop.sum(axis=0), axis=1))
 
     def _calculate_trophic_levels(self):
-        '''function calculating the trophic levels of nodes from the recursive relation'''
+        '''
+        Calculate trophic levels of nodes using their the recursive relation
+        '''
         data_size = len(self.flow_matrix)
 
         # sum of all incoming system flows to the compartment i
@@ -128,14 +171,26 @@ class FoodWeb():
             np.linalg.pinv(A)
         return inflow_pd.data_trophic_level.values
 
-    def show_heatmap(self, normalization=None,
+    def show_heatmap(self,
+                     boundary=False,
+                     normalization=None,
                      show_trophic_layer=True,
-                     add_external_flows=False,
                      switch_axes=False):
+        '''
+        Visualize foodweb in a form of heatmap. There is flow weight on the interesction
+        of X axis ("from" node) and Y axis ("to" node).
+
+        Parameters:
+        normalization - normalization method to apply on flows (graph edges).
+            Avaiable options are: diet, log, biomass, tst
+        show_trophic_layer - include additional heatmap layer presenting trophic levels relevant to X axis.
+        boundary - add boundary flows (Import, Export, Repiration) to the matrix
+        switch_axes - when True, X axis will represent "to" nodes and Y - "from"
+        '''
         show_heatmap(self,
+                     boundary=boundary,
                      normalization=normalization,
-                     show_trophic_layer=show_trophic_layer,
-                     add_external_flows=add_external_flows)
+                     show_trophic_layer=show_trophic_layer)
 
     def show_network_for_nodes(self, nodes,
                                file_name='food_web.html',
@@ -146,6 +201,23 @@ class FoodWeb():
                                central_gravity=0.0,
                                spring_length=200,
                                spring_strength=0.001):
+        '''
+        Visualize subgraph of foodweb in a form of network.
+        Parameters notebook, height, and width refer to initialization parameters of pyvis.network.Network.
+        Parameters node_distance, central_gravity, sprint_length, sprint_strength refer to
+        hierachical repulsion layout in pyvis (pyvis.network.Network.hrepulsion).
+
+        Parameters:
+        nodes - list of nodes to include in subgraph
+        file_name - file to save network (in html format)
+        notebook - True if using jupyter notebook
+        height - the height of the canvas
+        width - the width of the canvas
+        node_distance - the range of influence for the repulsion
+        central_gravity - the gravity attractor to pull the entire network to the center
+        spring_length - the rest length of the edges
+        spring_strength - the strong the edges springs are
+        '''
         nt = Network(notebook=notebook,  height=height, width=width, directed=True, layout=True)
         g = nx.Graph(self.get_graph(mark_alive_nodes=True))
         g = g.edge_subgraph([x for x in g.edges() if x[0].replace(
@@ -169,7 +241,9 @@ class FoodWeb():
         return nt.show(file_name)
 
     def writeXLS(self, filename):
-        '''Save the FoodWeb as an XLS file - spreadsheets.'''
+        '''
+        Save the FoodWeb as an XLS file - spreadsheets.
+        '''
         print(f'Saving FoodWeb with title {self.title}')
         writer = pd.ExcelWriter(filename)
         pd.DataFrame([self.title]).to_excel(writer, sheet_name="Title")
@@ -178,7 +252,9 @@ class FoodWeb():
         writer.save()
 
     def write_SCOR(self, filename):
-        ''' Write food web to a SCOR file'''
+        '''
+        Write food web to a SCOR file.
+        '''
         def write_col(node_df, f, col):
             node_df[col].to_csv(f, header=None, sep=' ', mode='a')
             f.write('-1 \n')
@@ -202,7 +278,9 @@ class FoodWeb():
             f.write('-1 \n')
 
     def __str__(self):
-        '''Overloading print operator'''
+        '''
+        Overloading print operator
+        '''
         return f'''
                 {self.title}\n
                 {self.node_df["Biomass"]}\n

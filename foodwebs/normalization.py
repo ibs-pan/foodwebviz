@@ -17,12 +17,18 @@ def diet_normalization(graph_view):
 
 
 def log_normalization(graph_view):
+    '''
+    Normalized weigth is a logarithm of original weight.
+    '''
     nx.set_edge_attributes(graph_view, {(e[0], e[1]): {'weight': np.log10(e[2])}
                                         for e in graph_view.edges(data='weight')})
     return graph_view
 
 
 def biomass_normalization(graph_view):
+    '''
+    Each weight is divided by biomass of the "from" node.
+    '''
     biomass = nx.get_node_attributes(graph_view, "Biomass")
     nx.set_edge_attributes(graph_view, {(e[0], e[1]): {'weight': e[2] / biomass[e[0]]}
                                         for e in graph_view.edges(data='weight')})
@@ -30,8 +36,9 @@ def biomass_normalization(graph_view):
 
 
 def tst_normalization(graph_view):
-    '''Function returning a list of internal flows normalized to TST'''
-
+    '''
+    Function returning a list of internal flows normalized to TST.
+    '''
     TST = sum([x[2] for x in graph_view.edges(data='weight')])
     nx.set_edge_attributes(graph_view, {(e[0], e[1]): {'weight': e[2] / TST}
                                         for e in graph_view.edges(data='weight')})
@@ -47,6 +54,9 @@ NORMALIZATION = {
 
 
 def flows_normalization(graph_view, norm_type):
+    '''
+    Applies appropiate normalization method.
+    '''
     if norm_type in NORMALIZATION:
         return NORMALIZATION[norm_type](graph_view)
     return graph_view
