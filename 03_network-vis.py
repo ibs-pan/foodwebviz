@@ -39,8 +39,4 @@ for web in food_webs:
     print(f'{web.title[:30]} --> {web.n}, {web.n_living}')
 # -
 
-food_webs[1].get_graph().nodes()
-
-food_webs[1].show_network_for_nodes(['EstuarineSediment detritus'])
-
-
+food_webs[1].show_network_for_nodes(['Red mud crab'])

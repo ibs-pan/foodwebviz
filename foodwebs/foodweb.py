@@ -220,14 +220,21 @@ class FoodWeb():
         '''
         nt = Network(notebook=notebook,  height=height, width=width, directed=True, layout=True)
         g = nx.Graph(self.get_graph(mark_alive_nodes=True))
-        g = g.edge_subgraph([x for x in g.edges() if x[0].replace(
+        g = g.edge_subgraph([(x[0], x[1]) for x in g.edges() if x[0].replace(
             f'{NOT_ALIVE_MARK} ', '') in nodes or x[1].replace(f'{NOT_ALIVE_MARK} ', '') in nodes])
 
         a = {x: {'color': px.colors.sequential.Emrld[int(attrs['TrophicLevel'])],
                  'level': attrs['TrophicLevel'],
-                 'title': f'{x}<br> TrophicLevel: {attrs["TrophicLevel"]:.2f}',
+                 'title': f'''{x}<br> TrophicLevel: {attrs["TrophicLevel"]:.2f}
+                                 <br> Biomass: {attrs["Biomass"]:.2f}
+                                 <br> Import: {attrs["Import"]:.2f}
+                                 <br> Export: {attrs["Export"]:.2f}
+                                 <br> Respiration: {attrs["Respiration"]:.2f}''',
                  'shape': 'box'} for x, attrs in g.nodes(data=True)}
         nx.set_node_attributes(g, a)
+
+        # rename weight attribute to value
+        nx.set_edge_attributes(g, {(edge[0], edge[1]): edge[2] for edge in g.edges(data='weight')}, 'value')
 
         nt.from_nx(g)
         nt.hrepulsion(
