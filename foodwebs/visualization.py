@@ -1,10 +1,30 @@
+"""
+Visualization methods for foodwebs.
+
+Examples
+--------
+
+"""
+
+
 import math
 import numpy as np
 import pandas as pd
+import networkx as nx
 import plotly.graph_objects as go
 import plotly.express as px
 
+from pyvis.network import Network
 from collections import defaultdict
+
+import foodwebs as fw
+
+
+__all__ = [
+    'draw_heatmap',
+    'draw_trophic_flows_heatmap',
+    'draw_trophic_flows_distribution'
+]
 
 
 def _get_trophic_layer(graph, from_nodes, to_nodes):
@@ -63,7 +83,7 @@ def _get_array_order(graph, nodes, reverse=False):
     return [x[0] for x in sorted(graph.nodes(data=True), key=sort_key, reverse=reverse) if x[0] in nodes]
 
 
-def show_heatmap(food_web, boundary=False, normalization=None, show_trophic_layer=True, switch_axes=False):
+def draw_heatmap(food_web, boundary=False, normalization=None, show_trophic_layer=True, switch_axes=False):
     '''
     Visualize foodweb in a form of heatmap. There is flow weight on the interesction
     of X axis ("from" node) and Y axis ("to" node).
@@ -206,7 +226,7 @@ def draw_trophic_flows_heatmap(food_web, switch_axes=False, log_scale=False):
     fig.show()
 
 
-def show_trophic_flows_distribution(food_web, normalize=False):
+def draw_trophic_flows_distribution(food_web, normalize=False):
     '''
     Visualize flows between trophic levels in a form of stacked bar chart.
 
@@ -230,3 +250,60 @@ def show_trophic_flows_distribution(food_web, normalize=False):
                  template="simple_white",
                  orientation='h')
     fig.show()
+
+
+def draw_network_for_nodes(food_web,
+                           nodes,
+                           file_name='food_web.html',
+                           notebook=True,
+                           height="800px",
+                           width="100%",
+                           node_distance=200,
+                           central_gravity=0.0,
+                           spring_length=200,
+                           spring_strength=0.001):
+    '''
+    Visualize subgraph of foodweb in a form of network.
+    Parameters notebook, height, and width refer to initialization parameters of pyvis.network.Network.
+    Parameters node_distance, central_gravity, sprint_length, sprint_strength refer to
+    hierachical repulsion layout in pyvis (pyvis.network.Network.hrepulsion).
+
+    Parameters:
+    nodes - list of nodes to include in subgraph
+    file_name - file to save network (in html format)
+    notebook - True if using jupyter notebook
+    height - the height of the canvas
+    width - the width of the canvas
+    node_distance - the range of influence for the repulsion
+    central_gravity - the gravity attractor to pull the entire network to the center
+    spring_length - the rest length of the edges
+    spring_strength - the strong the edges springs are
+    '''
+    nt = Network(notebook=notebook,  height=height, width=width, directed=True, layout=True)
+    g = nx.Graph(food_web.get_graph(mark_alive_nodes=True))
+    g = g.edge_subgraph([(x[0], x[1]) for x in g.edges() if x[0].replace(
+        f'{fw.NOT_ALIVE_MARK} ', '') in nodes or x[1].replace(f'{fw.NOT_ALIVE_MARK} ', '') in nodes])
+
+    a = {x: {'color': px.colors.sequential.Emrld[int(attrs['TrophicLevel'])],
+             'level': attrs['TrophicLevel'],
+             'title': f'''{x}<br> TrophicLevel: {attrs["TrophicLevel"]:.2f}
+                                <br> Biomass: {attrs["Biomass"]:.2f}
+                                <br> Import: {attrs["Import"]:.2f}
+                                <br> Export: {attrs["Export"]:.2f}
+                                <br> Respiration: {attrs["Respiration"]:.2f}''',
+             'shape': 'box'} for x, attrs in g.nodes(data=True)}
+    nx.set_node_attributes(g, a)
+
+    # rename weight attribute to value
+    nx.set_edge_attributes(g, {(edge[0], edge[1]): edge[2] for edge in g.edges(data='weight')}, 'value')
+
+    nt.from_nx(g)
+    nt.hrepulsion(
+        node_distance=node_distance,
+        central_gravity=central_gravity,
+        spring_length=spring_length,
+        spring_strength=spring_strength,
+        damping=0.09
+    )
+    nt.show_buttons(filter_='physics')
+    return nt.show(file_name)

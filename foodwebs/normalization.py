@@ -1,6 +1,20 @@
+"""
+Methods for foodweb's flow normalization.
+
+Examples
+--------
+"""
 
 import numpy as np
 import networkx as nx
+
+
+__all__ = [
+    'diet_normalization',
+    'log_normalization',
+    'biomass_normalization',
+    'tst_normalization'
+]
 
 
 def diet_normalization(graph_view):
@@ -45,18 +59,17 @@ def tst_normalization(graph_view):
     return graph_view
 
 
-NORMALIZATION = {
-    'biomass': biomass_normalization,
-    'log': log_normalization,
-    'diet': diet_normalization,
-    'tst': tst_normalization
-}
-
-
-def flows_normalization(graph_view, norm_type):
+def normalization_factory(graph_view, norm_type):
     '''
     Applies appropiate normalization method.
     '''
-    if norm_type in NORMALIZATION:
-        return NORMALIZATION[norm_type](graph_view)
+    normalization_methods = {
+        'biomass': biomass_normalization,
+        'log': log_normalization,
+        'diet': diet_normalization,
+        'tst': tst_normalization
+    }
+
+    if norm_type in normalization_methods:
+        return normalization_methods[norm_type](graph_view)
     return graph_view

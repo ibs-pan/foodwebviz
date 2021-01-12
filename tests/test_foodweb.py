@@ -3,8 +3,9 @@ import unittest
 import pandas as pd
 import numpy as np
 
+import foodwebs as fw
+
 from foodwebs.foodweb import FoodWeb
-from foodwebs.foodweb_io import read_from_SCOR
 from trophic_levels import TROPHIC_LEVELS_REAL
 
 
@@ -95,7 +96,7 @@ class FoodWebTestCase(unittest.TestCase):
 
     def test_calc_trophic_levels(self):
         web = FoodWeb(title='Test', node_df=NODE_DF, flow_matrix=FLOW_MATRIX)
-        np.testing.assert_almost_equal(np.array([1.0, 2.0, 1.0]), web._calculate_trophic_levels(), 4)
+        np.testing.assert_almost_equal(np.array([1.0, 2.0, 1.0]), fw.calculate_trophic_levels(web), 4)
 
     # def test_calc_trophic_levels2(self):
     #     import glob
@@ -110,7 +111,7 @@ class FoodWebTestCase(unittest.TestCase):
         normalized_weights = {
             'tst': [0.25, 0.16666666666666666, 0.16666666666666666, 0.4166666666666667],
             'biomass': [3.0, 2.0, 0.6666666666666666, 1.0],
-            'log': [1.0986122886681098, 0.6931471805599453, 0.6931471805599453, 1.6094379124341003],
+            'log': [0.47712125471966244, 0.3010299956639812, 0.3010299956639812, 0.6989700043360189],
             'diet': [0.375, 0.5, 0.5, 0.625]
         }
 
@@ -129,9 +130,9 @@ class FoodWebTestCase(unittest.TestCase):
         web = FoodWeb(title='Test', node_df=NODE_DF, flow_matrix=FLOW_MATRIX)
 
         scor_filename = 'test.scor'
-        web.write_SCOR(scor_filename)
+        fw.write_to_SCOR(web, scor_filename)
 
-        web_from_file = read_from_SCOR(scor_filename)
+        web_from_file = fw.read_from_SCOR(scor_filename)
         self.assertEqual(web.n, web_from_file.n)
         self.assertEqual(web.n_living, web_from_file.n_living)
         pd.testing.assert_frame_equal(web.flow_matrix, web_from_file.flow_matrix)
