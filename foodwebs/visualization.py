@@ -164,7 +164,8 @@ def draw_heatmap(food_web, boundary=False, normalization=None, show_trophic_laye
                       )
     fig.update_xaxes(showspikes=True, spikethickness=0.5)
     fig.update_yaxes(showspikes=True, spikesnap="cursor", spikemode="across", spikethickness=0.5)
-    fig.show()
+    # fig.show()
+    return fig
 
 
 def draw_trophic_flows_heatmap(food_web, switch_axes=False, log_scale=False):
