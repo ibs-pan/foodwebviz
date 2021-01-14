@@ -83,7 +83,7 @@ def _get_array_order(graph, nodes, reverse=False):
     return [x[0] for x in sorted(graph.nodes(data=True), key=sort_key, reverse=reverse) if x[0] in nodes]
 
 
-def draw_heatmap(food_web, boundary=False, normalization=None, show_trophic_layer=True, switch_axes=False):
+def draw_heatmap(food_web, boundary=False, normalization=None, show_trophic_layer=True, switch_axes=False, show_plot=True):
     '''
     Visualize foodweb in a form of heatmap. There is flow weight on the interesction
     of X axis ("from" node) and Y axis ("to" node).
@@ -164,11 +164,12 @@ def draw_heatmap(food_web, boundary=False, normalization=None, show_trophic_laye
                       )
     fig.update_xaxes(showspikes=True, spikethickness=0.5)
     fig.update_yaxes(showspikes=True, spikesnap="cursor", spikemode="across", spikethickness=0.5)
-    # fig.show()
+    if show_plot:
+        fig.show()
     return fig
 
 
-def draw_trophic_flows_heatmap(food_web, switch_axes=False, log_scale=False):
+def draw_trophic_flows_heatmap(food_web, switch_axes=False, log_scale=False, show_plot=True):
     '''
     Visualize flows between trophic levels in a form of heatmap. X axis represents "from" trophic level,
     and Y axis - "to" trophic level. On their interesection there is sum of all flows from
@@ -224,10 +225,12 @@ def draw_trophic_flows_heatmap(food_web, switch_axes=False, log_scale=False):
                       xaxis={'title': 'To' if not switch_axes else 'From',
                              'dtick': 1},
                       )
-    fig.show()
+    if show_plot:
+        fig.show()
+    return fig
 
 
-def draw_trophic_flows_distribution(food_web, normalize=False):
+def draw_trophic_flows_distribution(food_web, normalize=True, show_plot=True):
     '''
     Visualize flows between trophic levels in a form of stacked bar chart.
 
@@ -250,7 +253,9 @@ def draw_trophic_flows_distribution(food_web, normalize=False):
                  width=1000,
                  template="simple_white",
                  orientation='h')
-    fig.show()
+    if show_plot:
+        fig.show()
+    return fig
 
 
 def draw_network_for_nodes(food_web,

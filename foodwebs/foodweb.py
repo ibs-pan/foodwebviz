@@ -17,13 +17,7 @@ class FoodWeb():
 
     def __init__(self, title, node_df, flow_matrix):
         '''
-        Constructor from given dataframes
-
-        Parameters:
-        title - name of the foodweb
-        node_df - dataframe with columns:
-            "Name", "IsLiving", "Biomass", "Import", "Export", "TrophicLevel", "Respiration"
-        flow_matrix - dataframe of system flows within the ecosystem TODO columns?
+        Construtor of system flows within the ecosystem TODO columns?
         '''
         self.title = title
         self.node_df = node_df.set_index("Names")
