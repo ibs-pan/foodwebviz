@@ -16,9 +16,7 @@
 import math
 import numpy as np
 import pandas as pd
-from foodwebs.foodweb import FoodWeb
-from foodwebs.foodweb_io import read_from_SCOR
-from foodwebs.normalization import flows_normalization
+
 import networkx as nx
 
 import plotly.graph_objects as go
@@ -30,9 +28,11 @@ import pylab
 from pylab import rcParams
 rcParams['figure.figsize'] = 12, 8
 
+import foodwebs as fw
+
 # +
 import glob
-food_webs = [read_from_SCOR(net_path) for net_path in glob.glob('./data/*')]
+food_webs = [fw.read_from_SCOR(net_path) for net_path in glob.glob('./data/*')]
 
 for web in food_webs:
     print(f'{web.title[:30]} --> {web.n}, {web.n_living}')
@@ -42,21 +42,21 @@ for web in food_webs:
 
 # ### no normalization
 
-food_webs[2].show_heatmap(normalization='log', show_trophic_layer=True, add_external_flows=False)
+fw.draw_heatmap(food_webs[2], normalization='log', show_trophic_layer=True, boundary=False)
 
-food_webs[0].show_heatmap(normalization=None, show_trophic_layer=True, add_external_flows=True, switch_axes=False)
+fw.draw_heatmap(food_webs[0], normalization=None, show_trophic_layer=True, boundary=True, switch_axes=False)
 
 # ### biomass
 
-food_webs[0].show_heatmap(normalization='biomass', show_trophic_layer=True, add_external_flows=False)
+fw.draw_heatmap(food_webs[0], normalization='biomass', show_trophic_layer=True, boundary=False)
 
 # ### log
 
-food_webs[0].show_heatmap(normalization='log', show_trophic_layer=True, add_external_flows=False)
+fw.draw_heatmap(food_webs[0], normalization='log', show_trophic_layer=True, boundary=False)
 
 # ### diet
 
-food_webs[0].show_heatmap(normalization='diet', show_trophic_layer=True, add_external_flows=True)
+fw.draw_heatmap(food_webs[0], normalization='diet', show_trophic_layer=True, boundary=True)
 
 # # dendogram?
 
@@ -88,3 +88,8 @@ net = food_webs[5]
 fig = ff.create_dendrogram(net.node_df[['Biomass', 'IsAlive', 'Import', 'Export', 'Respiration', 'TrophicLevel']].values, orientation='left', labels=net.node_df.index.values)
 fig.update_layout(width=1200, height=500)
 fig.show()
+# -
+
+
+
+

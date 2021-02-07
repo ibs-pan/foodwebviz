@@ -1,3 +1,4 @@
+'''Class for foodwebs.'''
 import networkx as nx
 
 import foodwebs as fw
@@ -9,15 +10,27 @@ __all__ = [
 ]
 
 
-class FoodWeb():
+class FoodWeb(object):
     '''
-    Class defining a food web of an ecosystem with given stock biomasses
-    and flows between species (compartments)"
+    Class defining a food web of an ecosystem.
+    It stores species and flows between them with additional data like Biomass.
     '''
 
     def __init__(self, title, node_df, flow_matrix):
-        '''
-        Construtor of system flows within the ecosystem TODO columns?
+        '''Initialize a foodweb with title, nodes and flow matrix.
+            Parameters
+            ----------
+            title : string
+                Name of the foodweb.
+            node_df : pd.DataFrame
+                Species data respresented in a set of the following columns:
+                ['Names', 'IsAlive', 'Biomass', 'Import', 'Export', 'Respiration']
+            flow_matrix : pd.DataFrame
+                Data containing list of flows between species, adjacency matrix,
+                where interesectin betwen ith column and jth row represents flow from node i to j.
+            See Also
+            --------
+            io.read_from_SCOR
         '''
         self.title = title
         self.node_df = node_df.set_index("Names")
@@ -31,12 +44,7 @@ class FoodWeb():
         self._graph = self._init_graph()
 
     def _init_graph(self):
-        '''
-        Initialized networkx graph using adjacency matrix.
-
-        Returns:
-        networkx.DiGraph
-        '''
+        '''Returns networkx.DiGraph initialized using foodweb's flow matrix.'''
         graph = nx.from_pandas_adjacency(self.get_flow_matrix(boundary=True),  create_using=nx.DiGraph)
         nx.set_node_attributes(graph, self.node_df.to_dict(orient='index'))
 
@@ -49,17 +57,23 @@ class FoodWeb():
         return graph
 
     def get_graph(self, boundary=False, mark_alive_nodes=False, normalization=None):
-        '''
-        Allows access to networkx representation of foodweb.
+        '''Returns foodweb as networkx.SubGraph View fo networkx.DiGraph.
 
-        Parameters:
-        boundary - add boundary flows (Import, Export, Repiration) to the graph
-        mark_alive_nodes - nodes, which are not alive will have additional X mark near their name
-        normalization - additional normalization method to apply on graph edges.
-            Avaiable options are: diet, log, biomass, tst
+        Parameters
+        ----------
+        boundary : bool, optional (default=False)
+            If True, boundary flows will be added to the graph.
+            Boundary flows are: Import, Export, and Repiration.
+        mark_alive_nodes : bool, optional (default=False)
+            If True, nodes, which are not alive will have additional special sign near their name.
+        normalization : string, optional (default=None)
+            Defines method of graph edges normalization.
+            Avaiable options are: 'diet', 'log', 'biomass', and 'tst'.
 
-        Returns:
-        view of networkx.DiGraph
+        Returns
+        -------
+        subgraph : networkx.SubGraph
+            A read-only restricted view of networkx.DiGraph.
         '''
         exclude_nodes = [] if boundary else ['Import', 'Export', 'Respiration']
 
@@ -70,30 +84,42 @@ class FoodWeb():
         return g
 
     def get_flows(self, boundary=False, mark_alive_nodes=False, normalization=None):
-        '''
-        Returns a dataframe of all internal flows in a form [from, to, weight]
+        '''Returns a list of all flows within foodweb.
 
-        Parameters:
-        boundary - add boundary flows (Import, Export, Repiration) to the graph
-        mark_alive_nodes - nodes, which are not alive will have additional X mark near their name
-        normalization - additional normalization method to apply on graph edges.
-            Avaiable options are: diet, log, biomass, tst
+        Parameters
+        ----------
+        boundary : bool, optional (default=False)
+            If True, boundary flows will be added to the graph.
+            Boundary flows are: Import, Export, and Repiration.
+        mark_alive_nodes : bool, optional (default=False)
+            If True, nodes, which are not alive will have additional special sign near their name.
+        normalization : string, optional (default=None)
+            Defines method of graph edges normalization.
+            Avaiable options are: 'diet', 'log', 'biomass', and 'tst'.
 
-        Returns:
-        list of tuples
+        Returns
+        -------
+        flows : list of tuples
+            List of edges in graph's representation of a foodweb,
+            each tuple is in a form of (from, to, weight).
 
         '''
         return self.get_graph(boundary, mark_alive_nodes, normalization).edges(data=True)
 
     def get_flow_matrix(self, boundary=False):
-        '''
-        Returns the flow (adjacency) matrix.
+        '''Returns the flow (adjacency) matrix.
 
-        Parameters:
-        boundary - add boundary flows (Import, Export, Repiration) to the matrix
+        Parameters
+        ----------
+        boundary : bool, optional (default=False)
+            If True, boundary flows will be added to the graph.
+            Boundary flows are: Import, Export, and Repiration.
 
-        Returns:
-        pd.DataFrame
+        Returns
+        -------
+        flows_matrix : pd.DataFrame
+            Rows/columns are species, each row/column intersection represents flow
+            from ith to jth node.
         '''
         if not boundary:
             return self.flow_matrix
@@ -110,14 +136,12 @@ class FoodWeb():
             .fillna(0.0))
 
     def get_links_number(self):
-        '''
-        Returns the number of nonzero system links
+        '''Returns the number of nonzero flows.
         '''
         return self.get_graph(False).number_of_edges()
 
     def get_flow_sum(self):
-        '''
-        Returns the sum of ALL flows
+        '''Returns the sum of all flows.
         '''
         return self.get_flow_matrix(boundary=True).sum()
 
@@ -126,9 +150,6 @@ class FoodWeb():
         return(num_node_prop.div(num_node_prop.sum(axis=0), axis=1))
 
     def __str__(self):
-        '''
-        Overloading print operator
-        '''
         return f'''
                 {self.title}\n
                 {self.node_df["Biomass"]}\n

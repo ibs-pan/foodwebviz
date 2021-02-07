@@ -1,17 +1,39 @@
+'''Simple script that generates plots for all foodwebs from given directory (containing SCOR files).
+
+For each foodweb in directory the following files will created:
+    - heatmap
+    - trophic flows distribution
+    - network visualisation (only if foodweb has less than 20 nodes)
+
+
+Example usage:
+python3.8 draw.py --scor_dir data/ --output plots/
+'''
+
 import os
 import click
 import foodwebs as fw
 
 
-@click.command()
+@click.command('heheheh')
 @click.option('--scor_dir', help='Directory with SCOR files.')
-@click.option('--output', help='Directory where plots should be saved.')
+@click.option('--output', help='Directory where plots should be saved.', default='.')
 @click.option('--boundary', default=False, is_flag=True, help='Wheter to show boundary flows.')
 @click.option('--show_trophic_layer', default=True, is_flag=True, help='Wheter to show trophic layer.')
 @click.option('--switch_axes', default=False, is_flag=True, help='Wheter to switch axes.')
 @click.option('--normalization', default=None, type=click.Choice(['log', 'diet', 'biomass', 'tst']),
               help='Normalization method.')
 def draw_heatmaps(scor_dir, output, boundary, show_trophic_layer, switch_axes, normalization):
+    '''Simple script that generates plots for all foodwebs from given directory (containing SCOR files).
+
+    For each foodweb in directory the following files will created:
+
+        * heatmap
+
+        * trophic flows distribution
+
+        * network visualisation (only if foodweb has less than 20 nodes)
+    '''
     for subdir, dirs, files in os.walk(scor_dir):
         for f in files:
             print(f'Processing: {f}...')
@@ -27,6 +49,11 @@ def draw_heatmaps(scor_dir, output, boundary, show_trophic_layer, switch_axes, n
 
             fig = fw.draw_trophic_flows_distribution(food_web, show_plot=False)
             fig.write_image(f'{output}/{f}_distribution.png')
+
+            if food_web.n <= 20:
+                fw.draw_network_for_nodes(food_web,
+                                          file_name=f'{output}/{f}_network.html',
+                                          notebook=False)
 
 
 if __name__ == "__main__":

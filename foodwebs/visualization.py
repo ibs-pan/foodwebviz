@@ -1,12 +1,4 @@
-"""
-Visualization methods for foodwebs.
-
-Examples
---------
-
-"""
-
-
+'''Foodweb's visualization methods.'''
 import math
 import numpy as np
 import pandas as pd
@@ -23,18 +15,26 @@ import foodwebs as fw
 __all__ = [
     'draw_heatmap',
     'draw_trophic_flows_heatmap',
-    'draw_trophic_flows_distribution'
+    'draw_trophic_flows_distribution',
+    'draw_network_for_nodes'
 ]
 
 
 def _get_trophic_layer(graph, from_nodes, to_nodes):
-    '''
-    Creates additional Trace of Heatmap to show thropic levels of X axis nodes.
+    '''Creates Trace for Heatmap to show thropic levels of X axis nodes.
 
-    Parameters:
-    graph - input foodweb's graph
-    from_nodes - list of from nodes
-    to_nodes - list of to nodes
+    Parameters
+    ----------
+    graph : networkx.SubGraph
+        Graph View representing foodweb.
+    from_nodes: list
+        List of 'from' nodes.
+    to_nodes: list
+        List of 'to' nodes.
+
+    Returns
+    -------
+    trophic_layer : plotly.graph_objects.Heatmap
     '''
     trophic_flows = []
     for n in set(from_nodes):
@@ -58,14 +58,17 @@ def _get_trophic_layer(graph, from_nodes, to_nodes):
 
 
 def _get_trophic_flows(food_web):
-    '''
-    For each pair of trophic levels assigns sum of all nodes' weights in that pair.
+    '''For each pair of trophic levels assigns sum of all nodes' weights in that pair.
 
-    Parameters:
-    food_web - input network
+    Parameters
+    ----------
+    food_web : foodwebs.FoodWeb
+        Foodweb object.
 
-    Return:
-    pd.DataFrame with columns: ["from", "to", "wegiths"], where "from" and "to" are trophic levels.
+    Returns
+    -------
+    trophic_flows : pd.DataFrame
+        Columns: ["from", "to", "wegiths"], where "from" and "to" are trophic levels.
     '''
     graph = food_web.get_graph()
 
@@ -83,18 +86,30 @@ def _get_array_order(graph, nodes, reverse=False):
     return [x[0] for x in sorted(graph.nodes(data=True), key=sort_key, reverse=reverse) if x[0] in nodes]
 
 
-def draw_heatmap(food_web, boundary=False, normalization=None, show_trophic_layer=True, switch_axes=False, show_plot=True):
-    '''
-    Visualize foodweb in a form of heatmap. There is flow weight on the interesction
-    of X axis ("from" node) and Y axis ("to" node).
+def draw_heatmap(food_web, boundary=False, normalization=None,
+                 show_trophic_layer=True, switch_axes=False):
+    '''Visualize foodweb as a heatmap. On the interesction
+    of X axis ("from" node) and Y axis ("to" node) flow weight
+    is indicated.
 
-    Parameters:
-    food_web - input food web
-    normalization - normalization method to apply on flows (graph edges).
-        Avaiable options are: diet, log, biomass, tst
-    show_trophic_layer - include additional heatmap layer presenting trophic levels relevant to X axis.
-    boundary - add boundary flows (Import, Export, Repiration) to the matrix
-    switch_axes - when True, X axis will represent "to" nodes and Y - "from"
+    Parameters
+    ----------
+    food_web : foodwebs.FoodWeb
+        Foodweb object.
+    boundary : bool, optional (default=False)
+        If True, boundary flows will be added to the graph.
+        Boundary flows are: Import, Export, and Repiration.
+    normalization : string, optional (default=None)
+        Defines method of graph edges normalization.
+        Avaiable options are: 'diet', 'log', 'biomass', and 'tst'.
+    show_trophic_layer : bool, optional (default=False)
+        If True, include additional heatmap layer presenting trophic levels relevant to X axis.
+    switch_axes : bool, optional (default=False)
+        If True, X axis will represent "to" nodes and Y - "from".
+
+    Returns
+    -------
+    heatmap : plotly.graph_objects.Figure
     '''
 
     graph = food_web.get_graph(boundary, mark_alive_nodes=True, normalization=normalization)
@@ -164,21 +179,26 @@ def draw_heatmap(food_web, boundary=False, normalization=None, show_trophic_laye
                       )
     fig.update_xaxes(showspikes=True, spikethickness=0.5)
     fig.update_yaxes(showspikes=True, spikesnap="cursor", spikemode="across", spikethickness=0.5)
-    if show_plot:
-        fig.show()
     return fig
 
 
-def draw_trophic_flows_heatmap(food_web, switch_axes=False, log_scale=False, show_plot=True):
-    '''
-    Visualize flows between trophic levels in a form of heatmap. X axis represents "from" trophic level,
-    and Y axis - "to" trophic level. On their interesection there is sum of all flows from
-    one trophic level to another.
+def draw_trophic_flows_heatmap(food_web, switch_axes=False, log_scale=False):
+    '''Visualize flows between foodweb's trophic levels as a heatmap.
+    X axis represents "from" trophic level and Y - "to". On their
+    interesection there is sum of all flows from one trophic level to another.
 
-    Parameters:
-    food_web - input food web
-    switch_axes - when True, X axis will represent "to" trophic level and Y - "from"
-    log_scale - sum of flows will be result of log()
+    Parameters
+    ----------
+    food_web : foodwebs.FoodWeb
+        Foodweb object.
+    log_scale : bool, optional (default=False)
+        If True, logarithm of flows will be showed.
+    switch_axes : bool, optional (default=False)
+        If True, X axis will represent "to" trophic levels and Y - "from".
+
+    Returns
+    -------
+    heatmap : plotly.graph_objects.Figure
     '''
     if not switch_axes:
         hovertemplate = '%{y} --> %{x}: %{z:.3f}<extra></extra>'
@@ -223,20 +243,24 @@ def draw_trophic_flows_heatmap(food_web, switch_axes=False, log_scale=False, sho
                       yaxis={'title': 'From' if not switch_axes else 'To',
                              'dtick': 1},
                       xaxis={'title': 'To' if not switch_axes else 'From',
-                             'dtick': 1},
+                             'dtick': 1}
                       )
-    if show_plot:
-        fig.show()
     return fig
 
 
-def draw_trophic_flows_distribution(food_web, normalize=True, show_plot=True):
-    '''
-    Visualize flows between trophic levels in a form of stacked bar chart.
+def draw_trophic_flows_distribution(food_web, normalize=True):
+    '''Visualize flows between trophic levels in a form of stacked bar chart.
 
-    Parameters:
-    normalize - if True, bars will represent percentages summing up to 100
+    Parameters
+    ----------
+    food_web : foodwebs.FoodWeb
+        Foodweb object.
+    normalize : bool, optional (default=True)
+        If True, bars will represent percentages summing up to 100
 
+    Returns
+    -------
+    heatmap : plotly.graph_objects.Figure
     '''
     tf_pd = _get_trophic_flows(food_web)
     tf_pd['to'] = tf_pd['to'].astype(str)
@@ -253,40 +277,51 @@ def draw_trophic_flows_distribution(food_web, normalize=True, show_plot=True):
                  width=1000,
                  template="simple_white",
                  orientation='h')
-    if show_plot:
-        fig.show()
     return fig
 
 
 def draw_network_for_nodes(food_web,
-                           nodes,
+                           nodes=None,
                            file_name='food_web.html',
                            notebook=True,
                            height="800px",
                            width="100%",
-                           node_distance=200,
-                           central_gravity=0.0,
-                           spring_length=200,
-                           spring_strength=0.001):
-    '''
-    Visualize subgraph of foodweb in a form of network.
+                           **kwargs):
+    '''Visualize subgraph of foodweb in a form of network.
     Parameters notebook, height, and width refer to initialization parameters of pyvis.network.Network.
-    Parameters node_distance, central_gravity, sprint_length, sprint_strength refer to
-    hierachical repulsion layout in pyvis (pyvis.network.Network.hrepulsion).
+    Additional parameters may be passed hierachical repulsion layout pyvis.network.Network.hrepulsion.
+    Examples are: node_distance, central_gravity, sprint_length, sprint_strength.
 
-    Parameters:
-    nodes - list of nodes to include in subgraph
-    file_name - file to save network (in html format)
-    notebook - True if using jupyter notebook
-    height - the height of the canvas
-    width - the width of the canvas
-    node_distance - the range of influence for the repulsion
-    central_gravity - the gravity attractor to pull the entire network to the center
-    spring_length - the rest length of the edges
-    spring_strength - the strong the edges springs are
+    Parameters
+    ----------
+    food_web : foodwebs.FoodWeb
+        Foodweb object.
+    nodes : list of strings
+        Nodes to include in subgraph to visualize.
+    file_name : string, optional (default="food_web.html")
+        File to save network (in html format)
+    notebook - bool, optional (default=True)
+        True if using jupyter notebook.
+    height : string, optional (default="800px")
+        Height of the canvas. See: pyvis.network.Network.hrepulsion
+    width : string, optional (default="100%")
+        Width of the canvas. See: pyvis.network.Network.hrepulsion
+
+    Returns
+    -------
+    heatmap : pyvis.network.Network
     '''
-    nt = Network(notebook=notebook,  height=height, width=width, directed=True, layout=True)
+    nt = Network(notebook=notebook,
+                 height=height,
+                 width=width,
+                 directed=True,
+                 layout=True,
+                 heading=food_web.title)
     g = nx.Graph(food_web.get_graph(mark_alive_nodes=True))
+
+    if not nodes:
+        nodes = g.nodes()
+
     g = g.edge_subgraph([(x[0], x[1]) for x in g.edges() if x[0].replace(
         f'{fw.NOT_ALIVE_MARK} ', '') in nodes or x[1].replace(f'{fw.NOT_ALIVE_MARK} ', '') in nodes])
 
@@ -304,12 +339,6 @@ def draw_network_for_nodes(food_web,
     nx.set_edge_attributes(g, {(edge[0], edge[1]): edge[2] for edge in g.edges(data='weight')}, 'value')
 
     nt.from_nx(g)
-    nt.hrepulsion(
-        node_distance=node_distance,
-        central_gravity=central_gravity,
-        spring_length=spring_length,
-        spring_strength=spring_strength,
-        damping=0.09
-    )
+    nt.hrepulsion(**kwargs)
     nt.show_buttons(filter_='physics')
     return nt.show(file_name)

@@ -1,3 +1,4 @@
+'''Foodweb's utils methods.'''
 import numpy as np
 import pandas as pd
 
@@ -13,8 +14,17 @@ NOT_ALIVE_MARK = '\u2717'
 
 
 def calculate_trophic_levels(food_web):
-    '''
-    Calculate trophic levels of nodes using their the recursive relation
+    '''Calculate trophic levels of nodes using their the recursive relation.
+
+    Parameters
+    ----------
+    food web : foodwebs.FoodWeb
+        Foodweb object.
+
+    Returns
+    -------
+    trophic_levels : list
+        List of trophic level values.
     '''
     data_size = len(food_web.flow_matrix)
 
@@ -51,7 +61,12 @@ def calculate_trophic_levels(food_web):
 
 
 def is_alive_mapping(food_web):
+    '''Creates dictionary which special X mark to names, which are not alive.
+
+    Parameters
+    ----------
+    food web : foodwebs.FoodWeb
+        Foodweb object.
     '''
-    Creates dictionary which special X mark to names, which are not alive
-    '''
-    return {name: f'{NOT_ALIVE_MARK} {name}' for name in food_web.node_df[~food_web.node_df.IsAlive].index.values}
+    return {name: f'{NOT_ALIVE_MARK} {name}'
+            for name in food_web.node_df[~food_web.node_df.IsAlive].index.values}

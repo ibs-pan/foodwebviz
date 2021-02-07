@@ -1,7 +1,7 @@
 """
 Foodwebd
 ========
-Foodwebs is a Python package for the analysis and visualisation throphic networks.
+Foodwebs is a Python package for the analysis and visualisation of throphic networks.
 """
 
 __version__ = "0.1"

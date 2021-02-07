@@ -1,15 +1,14 @@
-"""Functions to read Foodweb objects from other formats.
+'''Functions to read Foodweb objects from other formats.
 
 Examples
 --------
 
 Create a foodweb from a SCOR file
 >>> food_web = read_from_SCOR(file_path)
-"""
-
+'''
 
 import pandas as pd
-from .foodweb import FoodWeb
+import foodwebs as fw
 
 
 __all__ = [
@@ -20,41 +19,67 @@ __all__ = [
 
 
 def read_from_SCOR(scor_path):
-    '''
-    Reads a TXT file in the SCOR format and returns a FoodWeb object
+    '''Reads a TXT file in the SCOR format and returns a FoodWeb object
 
-      SCOR file:
-      -------------------------------------------------------------
-      title
-      #of all compartments #of living compartments
-      1st compartment name
-      2nd compartment name
-      ...
-      biomasses (stock)  // line -> vector element
-      -1
-      imports (B^in)
-      -1
-      exports (B^out)
-      -1
-      respiration (R)
-      -1
-      flows ((Victoria's S)^T)  // line -> matrix element
-      -1 -1
-      ----------------------------------------------------------
+    SCOR file has the following format:
+    -------------------------------------------------------------
+    title
+    #of all compartments #of living compartments <-- size
+    1st compartment name
+    2nd compartment name
+    ...
+    biomasses (stock)  // line -> vector element
+    -1
+    imports (B^in)
+    -1
+    exports (B^out)
+    -1
+    respiration (R)
+    -1
+    flows ((Victoria's S)^T)  // line -> matrix element
+    -1
+    ----------------------------------------------------------
 
-    Parameters:
-    scor_path - file path
+    Example:
+    ----------------------------------------------------------
+    example_foodweb_1
+    2 1
+    A
+    B
+    1 0.00303
+    2 0.05
+    -1
+    1 0.0018666315
+    2 0.0
+    -1 
+    1 3.35565e-07
+    2 0.0001
+    -1 
+    1 0.09925068
+    2 1.45600009
+    -1 
+    1 2 0.002519108
+    -1
+    ----------------------------------------------------------
 
-    Returns:
-    foodweb.FoodWeb
+    Parameters
+    ----------
+    scor_path : string
+        Path to the foodweb in SCOR format.
+
+
+    Returns
+    -------
+    foodweb : foodwebs.Foodweb
     '''
     with open(scor_path, 'r', encoding='utf-8') as f:
         title = f.readline().strip()
         size = f.readline().split()
-        assert len(size) == 2
-        n = int(size[0])
-        n_living = int(size[1])
 
+        # check that size line has two values
+        assert len(size) == 2
+
+        n, n_living = int(size[0]), int(size[1])
         lines = [x.strip() for x in f.readlines()]
 
         net = pd.DataFrame(index=range(1, n+1))
@@ -62,6 +87,9 @@ def read_from_SCOR(scor_path):
         net['IsAlive'] = [i < n_living for i in range(n)]
 
         for i, col in enumerate(['Biomass', 'Import', 'Export', 'Respiration']):
+            # each section should end with -1
+            assert lines[(i + 1) * n + i + n] == '-1'
+
             net[col] = [float(x.split(' ')[1])
                         for x in lines[(i + 1) * n + i: (i + 2) * n + i]]
 
@@ -71,12 +99,22 @@ def read_from_SCOR(scor_path):
         flow_matrix = flow_matrix.fillna(0.0)
         flow_matrix.index = net.Names
         flow_matrix.columns = net.Names
-        return FoodWeb(title=title, flow_matrix=flow_matrix, node_df=net)
+        return fw.FoodWeb(title=title, flow_matrix=flow_matrix, node_df=net)
 
 
 def write_to_SCOR(food_web, scor_path):
-    '''
-    Write food web to a SCOR file.
+    '''Write foodweb to a SCOR file.
+
+    Parameters
+    ----------
+    foodweb : foodwebs.FoodWeb
+        Object to save.
+    scor_path: string
+        Destination path.
+
+    See Also
+    --------
+    io.read_from_SCOR
     '''
     def write_col(node_df, f, col):
         node_df[col].to_csv(f, header=None, sep=' ', mode='a')
@@ -99,11 +137,15 @@ def write_to_SCOR(food_web, scor_path):
 
 
 def write_to_XLS(food_web, filename):
-    '''
-    Save the FoodWeb as an XLS file - spreadsheets.
-    '''
-    print(f'Saving FoodWeb with title {food_web.title}')
+    '''Write foodweb as an XLS (spreadsheet) file.
 
+    Parameters
+    ----------
+    foodweb : foodwebs.FoodWeb
+        Object to save.
+    scor_path: string
+        Destination path.
+    '''
     writer = pd.ExcelWriter(filename)
     pd.DataFrame([food_web.title]).to_excel(writer, sheet_name="Title")
     food_web.node_df.to_excel(writer, sheet_name="Node properties")

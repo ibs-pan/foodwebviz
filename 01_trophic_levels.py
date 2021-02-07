@@ -13,11 +13,10 @@
 # ---
 
 # +
+import foodwebs as fw
+
 from foodwebs.foodweb import FoodWeb
-from foodwebs.foodweb_io import read_from_SCOR
 
-
-from foodwebs.visualization import draw_trophic_flows_heatmap, show_trophic_flows_distribution
 
 from pylab import rcParams
 rcParams['figure.figsize'] = 12, 8
@@ -27,18 +26,18 @@ rcParams['figure.figsize'] = 12, 8
 
 # +
 import glob
-food_webs = [read_from_SCOR(net_path) for net_path in glob.glob('./data/*')]
+food_webs = [fw.read_from_SCOR(net_path) for net_path in glob.glob('./data/*')]
 
 for web in food_webs:
     print(f'{web.title[:30]} --> {web.n}, {web.n_living}')
 # -
 
-draw_trophic_flows_heatmap(food_webs[0], log_scale=True)
+fw.draw_trophic_flows_heatmap(food_webs[0], log_scale=True)
 
 # ## Fows distribution
 
-show_trophic_flows_distribution(food_webs[0])
+fw.draw_trophic_flows_distribution(food_webs[0])
 
-show_trophic_flows_distribution(food_webs[0], normalize=True)
+fw.draw_trophic_flows_distribution(food_webs[0], normalize=True)
 
 

@@ -16,9 +16,6 @@
 import math
 import numpy as np
 import pandas as pd
-from foodwebs.foodweb import FoodWeb, NOT_ALIVE_MARK
-from foodwebs.foodweb_io import read_from_SCOR
-from foodwebs.normalization import flows_normalization
 import networkx as nx
 from pyvis.network import Network
 
@@ -31,12 +28,16 @@ import pylab
 from pylab import rcParams
 rcParams['figure.figsize'] = 12, 8
 
+import foodwebs as fw 
+
 # +
 import glob
-food_webs = [read_from_SCOR(net_path) for net_path in glob.glob('./data/*')]
+food_webs = [fw.read_from_SCOR(net_path) for net_path in glob.glob('./data/*')]
 
 for web in food_webs:
     print(f'{web.title[:30]} --> {web.n}, {web.n_living}')
 # -
 
-food_webs[1].show_network_for_nodes(['Red mud crab'])
+fw.draw_network_for_nodes(food_webs[1], ['Red mud crab'])
+
+fw.draw_network_for_nodes(food_webs[1], ['Sand crab'])
