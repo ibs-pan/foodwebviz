@@ -1,0 +1,48 @@
+Foodwebs
+========
+
+Foodwebs is a Python package for the creation and visualization of foodwebs / thropic networks.
+
+- **Source:** https://github.com/foodwebs
+- **Bug reports:** https://github.com/foodwebs/issues
+
+
+Install
+-------
+
+1. Install orca first: `npm install -g electron@6.1.4 orca`
+2. Manually download ``foodwebs`` package from `GitHub <https://github.com/foodwebs/foodwebs/releases>`_ and run the following terminal command from the
+top-level source directory::
+
+    $ pip install .
+
+
+Tutorial
+-------
+
+For code exmaples and functionality overview please refer to Jupyter Notebooks in the ``examples/`` directory.
+
+Testing
+-------
+
+Foodwebs  uses the Python ``pytest`` testing package.  You can learn more
+about pytest on their `homepage <https://pytest.org>`_.
+
+Bugs \ Questions
+-------
+
+In case of questions / problems please contact # TODO
+
+Please report any bugs that you find `here <https://github.com/foodwebs/issues>`_.
+
+
+Citation
+-------
+
+To cite package foodwebs in publications use:
+
+# TODO
+
+A BibTeX entry for LaTeX users is
+
+# TODO
