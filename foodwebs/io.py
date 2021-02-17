@@ -73,6 +73,7 @@ def read_from_SCOR(scor_path):
     foodweb : foodwebs.Foodweb
     '''
     with open(scor_path, 'r', encoding='utf-8') as f:
+        print(f'Reading file: {scor_path}')
         title = f.readline().strip()
         size = f.readline().split()
 

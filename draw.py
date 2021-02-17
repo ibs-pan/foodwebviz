@@ -43,11 +43,10 @@ def draw_heatmaps(scor_dir, output, boundary, show_trophic_layer, switch_axes, n
                                   boundary=boundary,
                                   normalization=normalization,
                                   show_trophic_layer=show_trophic_layer,
-                                  switch_axes=switch_axes,
-                                  show_plot=False)
+                                  switch_axes=switch_axes)
             fig.write_image(f'{output}/{f}_heatmap.png')
 
-            fig = fw.draw_trophic_flows_distribution(food_web, show_plot=False)
+            fig = fw.draw_trophic_flows_distribution(food_web)
             fig.write_image(f'{output}/{f}_distribution.png')
 
             if food_web.n <= 20:

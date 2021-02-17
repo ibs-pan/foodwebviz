@@ -20,6 +20,10 @@ __all__ = [
 ]
 
 
+def _get_title(food_web, limit=150):
+    return food_web.title if len(food_web.title) <= limit else food_web.title[:limit] + '...'
+
+
 def _get_trophic_layer(graph, from_nodes, to_nodes):
     '''Creates Trace for Heatmap to show thropic levels of X axis nodes.
 
@@ -87,7 +91,8 @@ def _get_array_order(graph, nodes, reverse=False):
 
 
 def draw_heatmap(food_web, boundary=False, normalization=None,
-                 show_trophic_layer=True, switch_axes=False):
+                 show_trophic_layer=True, switch_axes=False,
+                 width=1200, height=800):
     '''Visualize foodweb as a heatmap. On the interesction
     of X axis ("from" node) and Y axis ("to" node) flow weight
     is indicated.
@@ -106,6 +111,10 @@ def draw_heatmap(food_web, boundary=False, normalization=None,
         If True, include additional heatmap layer presenting trophic levels relevant to X axis.
     switch_axes : bool, optional (default=False)
         If True, X axis will represent "to" nodes and Y - "from".
+    width : int, optional (default=1200)
+        Width of the heatmap plot, large foodwebs might not fit in default width.
+    height : int, optional (default=800)
+        Height of the heatmap plot, large foodwebs might not fit in default height.
 
     Returns
     -------
@@ -162,9 +171,9 @@ def draw_heatmap(food_web, boundary=False, normalization=None,
         heatmap.hovertemplate = hovertemplate
 
     fig.add_trace(heatmap)
-    fig.update_layout(title=food_web.title,
-                      width=1200,
-                      height=900,
+    fig.update_layout(title=_get_title(food_web),
+                      width=width,
+                      height=height,
                       autosize=True,
                       yaxis={'categoryarray': _get_array_order(graph, from_nodes),
                              'title': 'From' if not switch_axes else 'To'},
@@ -182,7 +191,7 @@ def draw_heatmap(food_web, boundary=False, normalization=None,
     return fig
 
 
-def draw_trophic_flows_heatmap(food_web, switch_axes=False, log_scale=False):
+def draw_trophic_flows_heatmap(food_web, switch_axes=False, log_scale=False, width=1200, height=800):
     '''Visualize flows between foodweb's trophic levels as a heatmap.
     X axis represents "from" trophic level and Y - "to". On their
     interesection there is sum of all flows from one trophic level to another.
@@ -195,6 +204,10 @@ def draw_trophic_flows_heatmap(food_web, switch_axes=False, log_scale=False):
         If True, logarithm of flows will be showed.
     switch_axes : bool, optional (default=False)
         If True, X axis will represent "to" trophic levels and Y - "from".
+    width : int, optional (default=1200)
+        Width of the plot.
+    height : int, optional (default=800)
+        Height of the plot.
 
     Returns
     -------
@@ -213,7 +226,7 @@ def draw_trophic_flows_heatmap(food_web, switch_axes=False, log_scale=False):
                          z=z,
                          xgap=0.2,
                          ygap=0.2,
-                         colorscale='Emrld',  # 'Tealgrn',
+                         colorscale='Teal',
                          hoverongaps=False,
                          hovertemplate=hovertemplate)
 
@@ -236,19 +249,19 @@ def draw_trophic_flows_heatmap(food_web, switch_axes=False, log_scale=False):
         heatmap.hovertemplate = hovertemplate
 
     fig = go.Figure(data=heatmap)
-    fig.update_layout(title=food_web.title,
-                      width=1200,
-                      height=900,
+    fig.update_layout(title=_get_title(food_web),
+                      width=width,
+                      height=height,
                       autosize=True,
-                      yaxis={'title': 'From' if not switch_axes else 'To',
+                      yaxis={'title': 'Trophic Layer From'if not switch_axes else 'Trophic Layer To',
                              'dtick': 1},
-                      xaxis={'title': 'To' if not switch_axes else 'From',
+                      xaxis={'title': 'Trophic Layer To' if not switch_axes else 'Trophic Layer From',
                              'dtick': 1}
                       )
     return fig
 
 
-def draw_trophic_flows_distribution(food_web, normalize=True):
+def draw_trophic_flows_distribution(food_web, normalize=True, width=1000, height=800):
     '''Visualize flows between trophic levels in a form of stacked bar chart.
 
     Parameters
@@ -257,6 +270,10 @@ def draw_trophic_flows_distribution(food_web, normalize=True):
         Foodweb object.
     normalize : bool, optional (default=True)
         If True, bars will represent percentages summing up to 100
+    width : int, optional (default=600)
+        Width of the plot.
+    height : int, optional (default=800)
+        Height of the plot.
 
     Returns
     -------
@@ -272,10 +289,18 @@ def draw_trophic_flows_distribution(food_web, normalize=True):
                  y="from",
                  x="weights" if not normalize else "percentage",
                  color="to",
-                 title=food_web.title,
-                 height=600,
-                 width=1000,
+                 color_discrete_sequence=px.colors.sequential.Teal,
+                 title=_get_title(food_web),
+                 height=width,
+                 width=width,
                  template="simple_white",
+                 hover_data={'from': ':d',
+                             'to': ':d',
+                             'percentage':  ':.4f'},
+                 labels={
+                     'from': 'Trophic Layer From',
+                     'to': 'Trophic Layer To',
+                     'percentage': 'Percentage of flows'},
                  orientation='h')
     return fig
 
