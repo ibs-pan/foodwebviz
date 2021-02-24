@@ -78,7 +78,8 @@ def read_from_SCOR(scor_path):
         size = f.readline().split()
 
         # check that size line has two values
-        assert len(size) == 2
+        if len(size) != 2:
+            raise Exception('Invalid SCOR file format.')
 
         n, n_living = int(size[0]), int(size[1])
         lines = [x.strip() for x in f.readlines()]
@@ -89,7 +90,8 @@ def read_from_SCOR(scor_path):
 
         for i, col in enumerate(['Biomass', 'Import', 'Export', 'Respiration']):
             # each section should end with -1
-            assert lines[(i + 1) * n + i + n] == '-1'
+            if lines[(i + 1) * n + i + n] != '-1':
+                raise Exception(f'Invalid SCOR file format. {col} section is wrong.')
 
             net[col] = [float(x.split(' ')[1])
                         for x in lines[(i + 1) * n + i: (i + 2) * n + i]]

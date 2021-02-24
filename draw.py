@@ -15,7 +15,7 @@ import click
 import foodwebs as fw
 
 
-@click.command('heheheh')
+@click.command('Simple script that generates plots for all foodwebs from given directory (containing SCOR files).')
 @click.option('--scor_dir', help='Directory with SCOR files.')
 @click.option('--output', help='Directory where plots should be saved.', default='.')
 @click.option('--boundary', default=False, is_flag=True, help='Wheter to show boundary flows.')
@@ -47,7 +47,10 @@ def draw_heatmaps(scor_dir, output, boundary, show_trophic_layer, switch_axes, n
             fig.write_image(f'{output}/{f}_heatmap.png')
 
             fig = fw.draw_trophic_flows_distribution(food_web)
-            fig.write_image(f'{output}/{f}_distribution.png')
+            fig.write_image(f'{output}/{f}_throphic_levels_distribution.png')
+
+            fig = fw.draw_trophic_flows_heatmap(food_web)
+            fig.write_image(f'{output}/{f}_trophic_levels_heatmap.png')
 
             if food_web.n <= 20:
                 fw.draw_network_for_nodes(food_web,

@@ -253,6 +253,8 @@ def draw_trophic_flows_heatmap(food_web, switch_axes=False, log_scale=False, wid
                       width=width,
                       height=height,
                       autosize=True,
+                      xaxis_showgrid=False,
+                      yaxis_showgrid=False,
                       yaxis={'title': 'Trophic Layer From'if not switch_axes else 'Trophic Layer To',
                              'dtick': 1},
                       xaxis={'title': 'Trophic Layer To' if not switch_axes else 'Trophic Layer From',
