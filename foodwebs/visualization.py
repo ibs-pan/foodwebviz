@@ -154,9 +154,9 @@ def draw_heatmap(food_web, boundary=False, normalization=None,
     if normalization == 'log':
         z_orginal = [x[2]['weight'] for x in food_web.get_graph(
             boundary, mark_alive_nodes=True, normalization=None).edges(data=True)]
-        ticktext = [10**x for x in range(int(math.log10(max(z_orginal))) + 1)]
         tickvals = range(int(math.log10(min(z_orginal))) + 1, int(math.log10(max(z_orginal))) + 1)
-
+        ticktext = [10**x for x in range(len(tickvals))]
+ 
         heatmap.colorbar = dict(
             tick0=0,
             tickmode='array',
@@ -231,9 +231,9 @@ def draw_trophic_flows_heatmap(food_web, switch_axes=False, log_scale=False, wid
                          hovertemplate=hovertemplate)
 
     if log_scale:
-        ticktext = [10**x for x in range(int(math.log10(max(tf_pd['weights']))) + 1)]
         tickvals = range(int(math.log10(min(tf_pd['weights']))) + 1,
                          int(math.log10(max(tf_pd['weights']))) + 1)
+        ticktext = [10**x for x in range(len(tickvals))]
 
         heatmap.colorbar = dict(
             tick0=0,
