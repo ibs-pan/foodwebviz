@@ -44,23 +44,19 @@ def calculate_trophic_levels(food_web):
     #here we identify nodes at trophic level 1:
     tl['is_fixed_to_one'] = (tl.inflow <= 0.0) | (np.arange(data_size) >= food_web.n_living)
     tl['data_trophic_level'] = tl.is_fixed_to_one.astype(float)
-    tl = tl.reset_index()
-
+    
     # counting the nodes with TL fixed to 1
     if (sum(tl.is_fixed_to_one) != 0):
-        not_one = tl[~tl.is_fixed_to_one].index.values
-        one = tl[tl.is_fixed_to_one].index.values
-
         # update the equation due to the prescribed trophic level 1 - reduce the dimension of the matrix
-        A_tmp = A[np.ix_(not_one, not_one)]
-
-        B_tmp = tl[~tl.is_fixed_to_one]
-        B_tmp = 1 #filling the constants vector with ones
-        B_tmp -= np.sum(A[np.ix_(not_one, one)], axis=1) #this is the diet fraction fron non-living denoted as b in the function description
-
+        A_tmp = A.loc[~tl['is_fixed_to_one'],~tl['is_fixed_to_one']]
+        A_tmp = A_tmp*-1 + pd.DataFrame(np.identity(len(A_tmp)), index=A_tmp.index, columns=A_tmp.columns)
+    
+        B = pd.DataFrame(tl[~tl.is_fixed_to_one].is_fixed_to_one.copy())
+        B['b'] = 1 #filling the constants vector with ones - the constant 1 contribution
+        B['b'] = B['b'] + A.loc[~tl['is_fixed_to_one'], tl['is_fixed_to_one']].sum(axis=1) #this is the diet fraction fron non-living denoted as b in the function description
+    
         A_inverse = np.linalg.pinv(A_tmp)
-        A_inverse = np.multiply(A_inverse, B_tmp)
-        tl.loc[~tl['is_fixed_to_one'], 'data_trophic_level'] = np.sum(A_inverse, axis=1)
+        tl.loc[~tl['is_fixed_to_one'], 'data_trophic_level'] = np.dot(A_inverse, B['b'])
     else:
         # fails with negative trophic levels = some problems
         np.linalg.pinv(A)
