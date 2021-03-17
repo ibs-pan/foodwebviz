@@ -27,7 +27,8 @@ class FoodWeb(object):
                 ['Names', 'IsAlive', 'Biomass', 'Import', 'Export', 'Respiration']
             flow_matrix : pd.DataFrame
                 Data containing list of flows between species, adjacency matrix,
-                where interesectin betwen ith column and jth row represents flow from node i to j.
+                where the intersectin betwen ith column and jth row represents 
+                flow from node i to j.
             See Also
             --------
             io.read_from_SCOR
@@ -55,6 +56,11 @@ class FoodWeb(object):
             exclude_edges.append(('Respiration', n))
         graph.remove_edges_from(exclude_edges)
         return graph
+    
+    def get_diet_matrix(self):
+        '''Returns a matrix of system flows express as diet proportions=
+        =fraction of node inflows this flow contributes'''
+        return(self.flow_matrix.div(self.flow_matrix.sum(axis=0), axis=1).fillna(0.0))
 
     def get_graph(self, boundary=False, mark_alive_nodes=False, normalization=None):
         '''Returns foodweb as networkx.SubGraph View fo networkx.DiGraph.
