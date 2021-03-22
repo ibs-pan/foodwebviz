@@ -24,6 +24,8 @@ For code exmaples and functionality overview please refer to Jupyter Notebooks i
 
 Testing
 -------
+To execute the tests run:
+$ pytest 
 
 Foodwebs  uses the Python ``pytest`` testing package.  You can learn more
 about pytest on their `homepage <https://pytest.org>`_.
