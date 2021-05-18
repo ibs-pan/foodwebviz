@@ -344,7 +344,7 @@ def draw_network_for_nodes(food_web,
                  directed=True,
                  layout=True,
                  heading=food_web.title)
-    g = nx.Graph(food_web.get_graph(mark_alive_nodes=True))
+    g = food_web.get_graph(mark_alive_nodes=True).copy()
 
     if not nodes:
         nodes = g.nodes()
