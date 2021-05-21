@@ -21,6 +21,7 @@ Tutorial
 -------
 
 For code exmaples and functionality overview please refer to Jupyter Notebooks in the ``examples/`` directory.
+To obtain information on a specific function/method "function_name" please execute "help(function_name)".
 
 Testing
 -------
