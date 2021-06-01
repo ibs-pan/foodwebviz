@@ -353,7 +353,7 @@ def draw_network_for_nodes(food_web,
         f'{fw.NOT_ALIVE_MARK} ', '') in nodes or x[1].replace(f'{fw.NOT_ALIVE_MARK} ', '') in nodes])
 
     a = {x: {'color': px.colors.sequential.Emrld[int(attrs['TrophicLevel'])],
-             'level': attrs['TrophicLevel'],
+             'level': -attrs['TrophicLevel'],
              'title': f'''{x}<br> TrophicLevel: {attrs["TrophicLevel"]:.2f}
                                 <br> Biomass: {attrs["Biomass"]:.2f}
                                 <br> Import: {attrs["Import"]:.2f}
@@ -366,6 +366,7 @@ def draw_network_for_nodes(food_web,
     nx.set_edge_attributes(g, {(edge[0], edge[1]): edge[2] for edge in g.edges(data='weight')}, 'value')
 
     nt.from_nx(g)
-    nt.hrepulsion(**kwargs)
+    nt.hrepulsion(node_distance=220, **kwargs)
+    nt.set_edge_smooth('discrete')
     nt.show_buttons(filter_='physics')
     return nt.show(file_name)
