@@ -313,6 +313,7 @@ def draw_network_for_nodes(food_web,
                            notebook=True,
                            height="800px",
                            width="100%",
+                           exclude_denrite_flows=True,
                            **kwargs):
     '''Visualize subgraph of foodweb in a form of network.
     Parameters notebook, height, and width refer to initialization parameters of pyvis.network.Network.
@@ -344,7 +345,7 @@ def draw_network_for_nodes(food_web,
                  directed=True,
                  layout=True,
                  heading=food_web.title)
-    g = food_web.get_graph(mark_alive_nodes=True).copy()
+    g = food_web.get_graph(mark_alive_nodes=True, exclude_denrite_flows=exclude_denrite_flows).copy()
 
     if not nodes:
         nodes = g.nodes()
