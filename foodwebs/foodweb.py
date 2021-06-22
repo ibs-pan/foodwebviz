@@ -62,7 +62,7 @@ class FoodWeb(object):
         =fraction of node inflows this flow contributes'''
         return(self.flow_matrix.div(self.flow_matrix.sum(axis=0), axis=1).fillna(0.0))
 
-    def get_graph(self, boundary=False, mark_alive_nodes=False, normalization=None):
+    def get_graph(self, boundary=False, mark_alive_nodes=False, normalization=None, no_denrite_flows=False):
         '''Returns foodweb as networkx.SubGraph View fo networkx.DiGraph.
 
         Parameters
@@ -74,7 +74,7 @@ class FoodWeb(object):
             If True, nodes, which are not alive will have additional special sign near their name.
         normalization : string, optional (default=None)
             Defines method of graph edges normalization.
-            Avaiable options are: 'diet', 'log', 'biomass', and 'tst'.
+            Available options are: 'diet', 'log', 'biomass', and 'tst'.
 
         Returns
         -------
@@ -83,13 +83,18 @@ class FoodWeb(object):
         '''
         exclude_nodes = [] if boundary else ['Import', 'Export', 'Respiration']
 
-        g = nx.restricted_view(self._graph.copy(), exclude_nodes, [])
+        exclude_edges = []
+        if no_denrite_flows:
+            not_alive_nodes = self.node_df[~self.node_df.IsAlive].index.values
+            exclude_edges = [edge for edge in self._graph.edges() if edge[1] in not_alive_nodes]
+
+        g = nx.restricted_view(self._graph.copy(), exclude_nodes, exclude_edges)
         if mark_alive_nodes:
             g = nx.relabel_nodes(g, fw.is_alive_mapping(self))
         g = normalization_factory(g, norm_type=normalization)
         return g
 
-    def get_flows(self, boundary=False, mark_alive_nodes=False, normalization=None):
+    def get_flows(self, boundary=False, mark_alive_nodes=False, normalization=None, no_denrite_flows=False):
         '''Returns a list of all flows within foodweb.
 
         Parameters
@@ -110,7 +115,7 @@ class FoodWeb(object):
             each tuple is in a form of (from, to, weight).
 
         '''
-        return self.get_graph(boundary, mark_alive_nodes, normalization).edges(data=True)
+        return self.get_graph(boundary, mark_alive_nodes, normalization, no_denrite_flows).edges(data=True)
 
     def get_flow_matrix(self, boundary=False):
         '''Returns the flow (adjacency) matrix.
