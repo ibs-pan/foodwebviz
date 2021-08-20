@@ -27,7 +27,7 @@ class FoodWeb(object):
                 ['Names', 'IsAlive', 'Biomass', 'Import', 'Export', 'Respiration']
             flow_matrix : pd.DataFrame
                 Data containing list of flows between species, adjacency matrix,
-                where the intersectin betwen ith column and jth row represents 
+                where the intersection between ith column and jth row represents
                 flow from node i to j.
             See Also
             --------
@@ -56,13 +56,14 @@ class FoodWeb(object):
             exclude_edges.append(('Respiration', n))
         graph.remove_edges_from(exclude_edges)
         return graph
-    
+
     def get_diet_matrix(self):
         '''Returns a matrix of system flows express as diet proportions=
         =fraction of node inflows this flow contributes'''
         return(self.flow_matrix.div(self.flow_matrix.sum(axis=0), axis=1).fillna(0.0))
 
-    def get_graph(self, boundary=False, mark_alive_nodes=False, normalization=None, no_denrite_flows=False):
+    def get_graph(self, boundary=False, mark_alive_nodes=False, normalization=None,
+                  no_flows_to_detritus=False):
         '''Returns foodweb as networkx.SubGraph View fo networkx.DiGraph.
 
         Parameters
@@ -74,7 +75,10 @@ class FoodWeb(object):
             If True, nodes, which are not alive will have additional special sign near their name.
         normalization : string, optional (default=None)
             Defines method of graph edges normalization.
-            Available options are: 'diet', 'log', 'biomass', and 'tst'.
+            Available options are: 'diet', 'log', 'donor_control',
+            'predator_control', 'mixed_control' and 'tst'.
+        no_flows_to_detritus : bool, optional (default=False)
+            If True, fLows to detritus will be excluded from the results.
 
         Returns
         -------
@@ -84,7 +88,7 @@ class FoodWeb(object):
         exclude_nodes = [] if boundary else ['Import', 'Export', 'Respiration']
 
         exclude_edges = []
-        if no_denrite_flows:
+        if no_flows_to_detritus:
             not_alive_nodes = self.node_df[~self.node_df.IsAlive].index.values
             exclude_edges = [edge for edge in self._graph.edges() if edge[1] in not_alive_nodes]
 
@@ -94,7 +98,8 @@ class FoodWeb(object):
         g = normalization_factory(g, norm_type=normalization)
         return g
 
-    def get_flows(self, boundary=False, mark_alive_nodes=False, normalization=None, no_denrite_flows=False):
+    def get_flows(self, boundary=False, mark_alive_nodes=False, normalization=None,
+                  no_flows_to_detritus=False):
         '''Returns a list of all flows within foodweb.
 
         Parameters
@@ -106,7 +111,10 @@ class FoodWeb(object):
             If True, nodes, which are not alive will have additional special sign near their name.
         normalization : string, optional (default=None)
             Defines method of graph edges normalization.
-            Avaiable options are: 'diet', 'log', 'biomass', and 'tst'.
+            Available options are: 'diet', 'log', 'donor_control',
+            'predator_control', 'mixed_control' and 'tst'.
+        no_flows_to_detritus : bool, optional (default=False)
+            If True, fLows to detritus will be excluded from the results.
 
         Returns
         -------
@@ -115,7 +123,7 @@ class FoodWeb(object):
             each tuple is in a form of (from, to, weight).
 
         '''
-        return self.get_graph(boundary, mark_alive_nodes, normalization, no_denrite_flows).edges(data=True)
+        return self.get_graph(boundary, mark_alive_nodes, normalization, no_flows_to_detritus).edges(data=True)
 
     def get_flow_matrix(self, boundary=False):
         '''Returns the flow (adjacency) matrix.

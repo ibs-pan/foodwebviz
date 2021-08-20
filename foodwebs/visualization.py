@@ -90,7 +90,7 @@ def _get_array_order(graph, nodes, reverse=False):
     return [x[0] for x in sorted(graph.nodes(data=True), key=sort_key, reverse=reverse) if x[0] in nodes]
 
 
-def draw_heatmap(food_web, boundary=False, normalization=None,
+def draw_heatmap(food_web, boundary=False, normalization='log',
                  show_trophic_layer=True, switch_axes=False,
                  width=1200, height=800):
     '''Visualize foodweb as a heatmap. On the interesction
@@ -104,7 +104,7 @@ def draw_heatmap(food_web, boundary=False, normalization=None,
     boundary : bool, optional (default=False)
         If True, boundary flows will be added to the graph.
         Boundary flows are: Import, Export, and Repiration.
-    normalization : string, optional (default=None)
+    normalization : string, optional (default=log)
         Defines method of graph edges normalization.
         Avaiable options are: 'diet', 'log', 'biomass', and 'tst'.
     show_trophic_layer : bool, optional (default=False)
@@ -192,9 +192,9 @@ def draw_heatmap(food_web, boundary=False, normalization=None,
 
 
 def draw_trophic_flows_heatmap(food_web, switch_axes=False, log_scale=False, width=1200, height=800):
-    '''Visualize flows between foodweb's trophic levels as a heatmap.
-    X axis represents "from" trophic level and Y - "to". On their
-    interesection there is sum of all flows from one trophic level to another.
+    '''Visualize flows between foodweb's trophic levels as a heatmap. The
+    color at (x,y) represents the sum of flows from trophic level x to
+    trophic level y.
 
     Parameters
     ----------
@@ -264,7 +264,7 @@ def draw_trophic_flows_heatmap(food_web, switch_axes=False, log_scale=False, wid
 
 
 def draw_trophic_flows_distribution(food_web, normalize=True, width=1000, height=800):
-    '''Visualize flows between trophic levels in a form of stacked bar chart.
+    '''Visualize flows between trophic levels as a stacked bar chart.
 
     Parameters
     ----------
@@ -315,10 +315,11 @@ def draw_network_for_nodes(food_web,
                            width="100%",
                            exclude_denrite_flows=True,
                            **kwargs):
-    '''Visualize subgraph of foodweb in a form of network.
+    '''Visualize subgraph of foodweb as a network.
     Parameters notebook, height, and width refer to initialization parameters of pyvis.network.Network.
-    Additional parameters may be passed hierachical repulsion layout pyvis.network.Network.hrepulsion.
-    Examples are: node_distance, central_gravity, sprint_length, sprint_strength.
+    Additional parameters may be passed to hierachical repulsion layout as defined in
+    pyvis.network.Network.hrepulsion. Examples are: node_distance, central_gravity,
+    spring_length, or spring_strength.
 
     Parameters
     ----------

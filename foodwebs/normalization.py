@@ -6,7 +6,9 @@ import networkx as nx
 __all__ = [
     'diet_normalization',
     'log_normalization',
-    'biomass_normalization',
+    'donor_control_normalization',
+    'predator_control_normalization',
+    'mixed_control_normalization',
     'tst_normalization'
 ]
 
@@ -52,7 +54,7 @@ def log_normalization(foodweb_graph_view):
     return foodweb_graph_view
 
 
-def biomass_normalization(foodweb_graph_view):
+def donor_control_normalization(foodweb_graph_view):
     '''Each weight is divided by biomass of the "from" node.
 
     Parameters
@@ -67,6 +69,45 @@ def biomass_normalization(foodweb_graph_view):
     '''
     biomass = nx.get_node_attributes(foodweb_graph_view, "Biomass")
     nx.set_edge_attributes(foodweb_graph_view, {(e[0], e[1]): {'weight': e[2] / biomass[e[0]]}
+                                                for e in foodweb_graph_view.edges(data='weight')})
+    return foodweb_graph_view
+
+
+def predator_control_normalization(foodweb_graph_view):
+    '''Each weight is divided by biomass of the "to" node.
+
+    Parameters
+    ----------
+    foodweb_graph_view : networkx.SubGraph
+        Graph View representing foodweb
+
+    Returns
+    -------
+    subgraph : networkx.SubGraph
+        Graph View representing normalized foodweb
+    '''
+    biomass = nx.get_node_attributes(foodweb_graph_view, "Biomass")
+    nx.set_edge_attributes(foodweb_graph_view, {(e[0], e[1]): {'weight': e[2] / biomass[e[1]]}
+                                                for e in foodweb_graph_view.edges(data='weight')})
+    return foodweb_graph_view
+
+
+def mixed_control_normalization(foodweb_graph_view):
+    '''Each weight is equal to donor_control * predator_control.
+
+    Parameters
+    ----------
+    foodweb_graph_view : networkx.SubGraph
+        Graph View representing foodweb
+
+    Returns
+    -------
+    subgraph : networkx.SubGraph
+        Graph View representing normalized foodweb
+    '''
+    biomass = nx.get_node_attributes(foodweb_graph_view, "Biomass")
+    nx.set_edge_attributes(foodweb_graph_view, {(e[0], e[1]):
+                                                {'weight': (e[2] / biomass[e[0]]) * (e[2] / biomass[e[1]])}
                                                 for e in foodweb_graph_view.edges(data='weight')})
     return foodweb_graph_view
 
@@ -91,7 +132,7 @@ def tst_normalization(foodweb_graph_view):
 
 
 def normalization_factory(foodweb_graph_view, norm_type):
-    '''Applies appropiate normalization method according to norm_type argument.
+    '''Applies apropiate normalization method according to norm_type argument.
 
     Parameters
     ----------
@@ -99,7 +140,7 @@ def normalization_factory(foodweb_graph_view, norm_type):
         Graph View representing foodweb
     norm_type : string
         Represents normalization type to use.
-        Avaiable options are: 'diet', 'log', 'biomass', and 'tst'.
+        Available options are: 'diet', 'log', 'biomass', and 'tst'.
 
     Returns
     -------
@@ -107,7 +148,9 @@ def normalization_factory(foodweb_graph_view, norm_type):
         Graph View representing normalized foodweb
     '''
     normalization_methods = {
-        'biomass': biomass_normalization,
+        'donor_control': donor_control_normalization,
+        'predator_control': predator_control_normalization,
+        'mixed_control': mixed_control_normalization,
         'log': log_normalization,
         'diet': diet_normalization,
         'tst': tst_normalization
