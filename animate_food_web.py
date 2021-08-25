@@ -39,18 +39,18 @@ scor_file_in='atlss_cypress_wet.dat'#'Alaska_Prince_William_Sound_2.dat'#'stmark
 gif_file_out='cypress_wet.gif'
 
  
-def foodweb_animation(scor_file_in,gif_file_out, fps=10, anim_len=2, trails=6, min_node_radius=0.5, max_node_radius=10, min_part_num=2, max_part_num=150, flow_map_fun=np.sqrt, if_imports=True, if_exports=False, how_to_color='tl', cmap =sns.color_palette(), max_luminance=0.85):
+def animate_foodweb(scor_file_in,gif_file_out, fps=10, anim_len=2, trails=6, min_node_radius=0.5, max_node_radius=10, min_part_num=2, max_part_num=150, map_fun=np.sqrt, if_imports=True, if_exports=False, how_to_color='tl', cmap =sns.color_palette(), max_luminance=0.85):
 #foodweb_animation creates a GIF animation saved as gif_file_out based on the food web provided as a SCOR file scor_file_in. The canvas size in units relevant to further parameters is [0,100]x[0,100].
 #   trails:       the number of shades after each particle; shades are dots of diminishing opacity; it significantly impacts computation length
 #   min_node_radius: the radius of the smallest node on canvas [0,100]x[0,100]
 #   max_node_radius: the radius of the largest node on canvas [0,100]x[0,100]
 #   min_part_num: the number of particles representing the smallest flow
 #   max_part_num: the number of particles representing the largest flow
-#   flow_map_fun: a function defined over (positive) real numbers and returning a positive real number; 
+#   map_fun: a function defined over (positive) real numbers and returning a positive real number; 
 #                 used to squeeze the biomasses and flows that can span many orders of magnitude into the ranges
 #                 [min_node_radius, max_node_radius] and [min_part_num, max_part_num]
 #                 recommended functions: square root (numpy.sqrt) and logarithm (numpy.log10)
-#                   the flow_map_fun is used as g(x) in mapping the interval [a,b] to a known interval [A, B]:
+#                   the map_fun is used as g(x) in mapping the interval [a,b] to a known interval [A, B]:
 #                   f(x)= A + (B-A)g(x)/g(b) where g(a)=0
 #   how_to_color: node coloring option, implemented
 #                 'tl' (according to the trophic level),
@@ -66,7 +66,7 @@ def foodweb_animation(scor_file_in,gif_file_out, fps=10, anim_len=2, trails=6, m
         #add vertices
         fig = plt.gcf()
         ax = fig.gca()
-        add_vertices(ax, netIm.nodes,r_min=min_node_radius,r_max=max_node_radius, font_size=font_size, alpha_=0.95, map_fun=flow_map_fun)
+        add_vertices(ax, netIm.nodes,r_min=min_node_radius,r_max=max_node_radius, font_size=font_size, alpha_=0.95, map_fun=map_fun)
         add_trophic_level_legend(ax,netIm.nodes,font_size)
         T=0
         if trails>0.0:
@@ -80,7 +80,7 @@ def foodweb_animation(scor_file_in,gif_file_out, fps=10, anim_len=2, trails=6, m
      #how long should the animation be in s
     frameNumber=fps*anim_len #number of frames
     
-    netIm=readNetImage('./examples/'+scor_file_in,80, min_part_num=min_part_num,map_fun=flow_map_fun, max_part=max_part_num)# Iceland_227.dat')#BlackSea_433.dat')#
+    netIm=readNetImage('./examples/'+scor_file_in,80, min_part_num=min_part_num,map_fun=map_fun, max_part=max_part_num)# Iceland_227.dat')#BlackSea_433.dat')#
     particles=init_particles(netIm,if_imports,if_exports, max_part=max_part_num)
     particles=assign_colors(particles,netIm,how_to_color='trophic_level', max_luminance=max_luminance, cmap=cmap) #how_to_color='discrete' to paint each node differently for clarity
     max_width=np.max(netIm.nodes['width'])
@@ -95,7 +95,7 @@ def foodweb_animation(scor_file_in,gif_file_out, fps=10, anim_len=2, trails=6, m
 # plt.close()
 # fig = plt.figure()
 # ax = fig.gca()
-# add_vertices(ax, netIm.nodes,r_min=min_node_radius,r_max=max_node_radius, font_size=font_size, alpha_=0.95, map_fun=flow_map_fun)
+# add_vertices(ax, netIm.nodes,r_min=min_node_radius,r_max=max_node_radius, font_size=font_size, alpha_=0.95, map_fun=map_fun)
 # add_trophic_level_legend(ax,netIm.nodes,font_size)
 # plt.scatter(particles.loc[1:4,'x'], particles.loc[1:4,'y'], s=3,edgecolors={'none'},alpha=0.01)
 # plt.gca().axis('off')
