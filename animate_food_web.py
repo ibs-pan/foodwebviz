@@ -11,12 +11,12 @@ import seaborn as sns
 import pandas as pd
 import matplotlib.pyplot as plt
 from numpy.random import uniform
-from gif_animate import animate
 import foodwebs as fw
 import netImage as ni
 import matplotlib.colors
 
 from anim_visuals import layer,add_vertices, init_particles, assign_colors, add_trophic_level_legend
+from part_viz_utils import animate
 
 #INPUT
 def readNetImage(net_path,k, min_part_num, map_fun, max_part): #read a netImage from a file
