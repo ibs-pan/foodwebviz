@@ -80,7 +80,7 @@ def animate_foodweb(scor_file_in,gif_file_out, fps=10, anim_len=2, trails=6, min
      #how long should the animation be in s
     frameNumber=fps*anim_len #number of frames
     
-    netIm=readNetImage('./examples/'+scor_file_in,80, min_part_num=min_part_num,map_fun=map_fun, max_part=max_part_num)# Iceland_227.dat')#BlackSea_433.dat')#
+    netIm=readNetImage('../examples/'+scor_file_in,80, min_part_num=min_part_num,map_fun=map_fun, max_part=max_part_num)# Iceland_227.dat')#BlackSea_433.dat')#
     particles=init_particles(netIm,if_imports,if_exports, max_part=max_part_num)
     particles=assign_colors(particles,netIm,how_to_color='trophic_level', max_luminance=max_luminance, cmap=cmap) #how_to_color='discrete' to paint each node differently for clarity
     max_width=np.max(netIm.nodes['width'])
@@ -124,7 +124,7 @@ def animate_foodweb(scor_file_in,gif_file_out, fps=10, anim_len=2, trails=6, min
 # 
 # =============================================================================
 
-
+animate_foodweb(scor_file_in,gif_file_out)
 
 
 
