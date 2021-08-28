@@ -7,19 +7,20 @@ Various utility functions, more universal in their possible applications.
 @author: Mateusz
 """
 from matplotlib import animation
+import matplotlib.pyplot as plt
+
 
 def squeeze_map(x, min_x, max_x, map_fun, min_out, max_out):
     #we map the interval [min_x, max_x] into [min_out, max_out] so that the points are squeezed using the function map_fun
-    # y_1 - y_2 ~ map_fun(c*x_1) - map_fun(c*x2) 
+    # y_1 - y_2 ~ map_fun(c*x_1) - map_fun(c*x2)
     #map_fun governs the mapping function, e.g. np.log10(), np.sqrt():
-        #'sqrt': uses square root as the map basis
-        #'log': uses log_10 as the map basis
+    #'sqrt': uses square root as the map basis
+    #'log': uses log_10 as the map basis
     #a sufficient way to map an interval [a,b] (of flows) to a known interval [A, B] is:
-        # f(x)= A + (B-A)g(x)/g(b) where g(a)=0
+    # f(x)= A + (B-A)g(x)/g(b) where g(a)=0
     # the implemented g(x) are log10, sqrt, but any strictly monotonously growing function mapping a to zero is fine
-    return(min_out+ (max_out - min_out)*map_fun(x/min_x)/map_fun(max_x/min_x))
+    return(min_out + (max_out - min_out)*map_fun(x/min_x)/map_fun(max_x/min_x))
 
-import matplotlib.pyplot as plt
 
 def animate(filename, func, frames, interval, fig=None, figsize=(6.5, 6.5), fps=None, dpi=None):
     """ Creates an animated GIF of a matplotlib.
@@ -45,8 +46,6 @@ def animate(filename, func, frames, interval, fig=None, figsize=(6.5, 6.5), fps=
        size of the figure in inches. Defaults to 6.5" by 6.5"
     """
 
-
-
     def forward(frame):
         # I don't know if it is a bug or what, but FuncAnimation calls twice
         # with the first frame number. That breaks any animation that uses
@@ -58,9 +57,9 @@ def animate(filename, func, frames, interval, fig=None, figsize=(6.5, 6.5), fps=
 
     if fig is None:
         fig = plt.figure(figsize=figsize)
-    
+
     #fig.patch.set_visible(False)
-    
+
     forward.first = True
     anim = animation.FuncAnimation(fig, forward, frames=frames, interval=interval)
     anim.save(filename, writer='imagemagick', fps=fps, dpi=dpi)

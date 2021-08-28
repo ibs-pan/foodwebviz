@@ -76,7 +76,7 @@ class FoodWeb(object):
         normalization : string, optional (default=None)
             Defines method of graph edges normalization.
             Available options are: 'diet', 'log', 'donor_control',
-            'predator_control', 'mixed_control' and 'tst'.
+            'predator_control', 'mixed_control', 'linear' and 'tst'.
         no_flows_to_detritus : bool, optional (default=False)
             If True, fLows to detritus will be excluded from the results.
 
@@ -112,7 +112,7 @@ class FoodWeb(object):
         normalization : string, optional (default=None)
             Defines method of graph edges normalization.
             Available options are: 'diet', 'log', 'donor_control',
-            'predator_control', 'mixed_control' and 'tst'.
+            'predator_control', 'mixed_control', 'linear' and 'tst'.
         no_flows_to_detritus : bool, optional (default=False)
             If True, fLows to detritus will be excluded from the results.
 

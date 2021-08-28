@@ -106,7 +106,8 @@ def draw_heatmap(food_web, boundary=False, normalization='log',
         Boundary flows are: Import, Export, and Repiration.
     normalization : string, optional (default=log)
         Defines method of graph edges normalization.
-        Avaiable options are: 'diet', 'log', 'biomass', and 'tst'.
+        Available options are: 'diet', 'log', 'donor_control',
+        'predator_control', 'mixed_control', 'linear' and 'tst'.
     show_trophic_layer : bool, optional (default=False)
         If True, include additional heatmap layer presenting trophic levels relevant to X axis.
     switch_axes : bool, optional (default=False)

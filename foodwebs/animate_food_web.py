@@ -5,15 +5,11 @@ Created on Tue Feb 23 12:14:50 2021
 @author: Mateusz
 """
 
-import os
 import numpy as np
 import seaborn as sns
-import pandas as pd
 import matplotlib.pyplot as plt
-from numpy.random import uniform
 import foodwebs as fw
 import netImage as ni
-import matplotlib.colors
 
 from anim_visuals import layer,add_vertices, init_particles, assign_colors, add_trophic_level_legend
 from part_viz_utils import animate
