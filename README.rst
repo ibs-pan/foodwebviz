@@ -24,8 +24,7 @@ Tutorial
 For code examples and functionality overview please refer to Jupyter Notebooks in the ``examples/`` directory.
 To get information on a specific function/method "function_name" please execute "help(function_name)".
 
-Click here to lunch tutorial notebook: 
-[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/lpawluczuk/foodwebs/master?filepath=examples%2Fvisualization.ipynb)
+Click here to lunch tutorial notebook: https://mybinder.org/v2/gh/lpawluczuk/foodwebs/master?filepath=examples%2Fvisualization.ipynb
 
 Testing
 -------
