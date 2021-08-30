@@ -1,0 +1,4 @@
+libmagickwand-dev
+xvfb
+libgtk2.0-0
+libgconf-2-4
