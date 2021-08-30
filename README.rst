@@ -1,7 +1,7 @@
 Foodwebs
 ========
 
-Foodwebs is a Python package for the creation and visualization of foodwebs / thropic networks.
+Foodwebs is a Python package for the creation and visualization of foodwebs (trophic networks).
 
 - **Source:** https://github.com/foodwebs
 - **Bug reports:** https://github.com/foodwebs/issues
