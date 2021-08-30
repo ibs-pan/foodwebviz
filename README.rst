@@ -11,6 +11,7 @@ Install
 -------
 
 1. Install orca first: `npm install -g electron@6.1.4 orca`
+2. In order to create animations, install ImageMagick: https://docs.wand-py.org/en/0.3.5/guide/install.html (on Linux: 'sudo apt-get install libmagickwand-dev')
 2. Manually download ``foodwebs`` package from `GitHub <https://github.com/foodwebs/foodwebs/releases>`_ and run the following terminal command from the
 top-level source directory::
 

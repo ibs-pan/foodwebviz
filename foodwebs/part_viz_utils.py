@@ -8,7 +8,7 @@ Various utility functions, more universal in their possible applications.
 """
 from matplotlib import animation
 import matplotlib.pyplot as plt
-
+from matplotlib.animation import FuncAnimation, PillowWriter 
 
 def squeeze_map(x, min_x, max_x, map_fun, min_out, max_out):
     #we map the interval [min_x, max_x] into [min_out, max_out] so that the points are squeezed using the function map_fun

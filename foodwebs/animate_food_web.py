@@ -35,11 +35,11 @@ def adapt_particle_size(particles_nr, node_nr):  # adapt size of flow particles
 
 #A food web example
 # 'Alaska_Prince_William_Sound_2.dat'#'stmarks_jan1.dat'#'mdmar02.dat' #'BlackSea_433.dat'#'Alaska_Prince_William_Sound_2.dat' #
-scor_file_in = 'atlss_cypress_wet.dat'
+scor_file_in = 'Alaska_Prince_William_Sound.scor'# 'atlss_cypress_wet.dat'
 gif_file_out = 'cypress_wet.gif'
 
 
-def animate_foodweb(scor_file_in, gif_file_out, fps=10, anim_len=2, trails=6, min_node_radius=0.5, max_node_radius=10, min_part_num=2, max_part_num=150, map_fun=np.sqrt, if_imports=True, if_exports=False, how_to_color='tl', cmap=sns.color_palette(), max_luminance=0.85):
+def animate_foodweb(scor_file_in, gif_file_out, fps=10, anim_len=2, trails=6, min_node_radius=0.5, max_node_radius=10, min_part_num=2, max_part_num=150, map_fun=np.sqrt, if_imports=True, if_exports=False, how_to_color='tl', cmap=plt.cm.get_cmap('viridis'), max_luminance=0.85):
     #foodweb_animation creates a GIF animation saved as gif_file_out based on the food web provided as a SCOR file scor_file_in. The canvas size in units relevant to further parameters is [0,100]x[0,100].
     #   trails:       the number of shades after each particle; shades are dots of diminishing opacity; it significantly impacts computation length
     #   min_node_radius: the radius of the smallest node on canvas [0,100]x[0,100]
@@ -55,7 +55,7 @@ def animate_foodweb(scor_file_in, gif_file_out, fps=10, anim_len=2, trails=6, mi
     #   how_to_color: node coloring option, implemented
     #                 'tl' (according to the trophic level),
     #                 'discrete' (making neighbouring nodes of different colours);
-    #   cmap:         colour map; must be continous for 'tl' coloring (e.g. seaborn.color_palette(), matplotlib.pyplot.cm.get_cmap('viridis'))
+    #   cmap:         colour map; must be continous for 'tl' coloring (e.g. seaborn.color_palette(as_cmap=True), matplotlib.pyplot.cm.get_cmap('viridis'))
     #                 and discrete for 'discrete' coloring (e.g. matplotlib.pyplot.cm.cubehelix)
     #   max_luminance: cut-off for the color range in cmap, in [0,1]: no cut-off is equivalent to max_luminance=1
     #                  usually, the highest values in a cmap range are very bright and hardly visible

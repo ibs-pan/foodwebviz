@@ -156,7 +156,7 @@ class netImage(object):
         #  min_part_num: fixed number of particles for a minimal flow
 
         if not withDetritus:
-              flows = net.getAllToLivingFlows()
+              flows = net.get_all_to_living_flows()
         else:
                flows = net.get_flow_matrix(boundary=False)
         # the minimal flow will correspond to a fixed number of particles
@@ -358,7 +358,7 @@ def onSegment(p, q, r):
            if ((q[0] <= max(p[0], r[0])) and (q[0] >= min(p[0], r[0])) and
                     (q[1] <= max(p[1], r[1])) and (q[1] >= min(p[1], r[1]))):
                 return True
-            return False
+           return False
 
 
 def orientation(p, q, r):
