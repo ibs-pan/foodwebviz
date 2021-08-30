@@ -172,7 +172,7 @@ def draw_heatmap(food_web, boundary=False, normalization='log',
         heatmap.hovertemplate = hovertemplate
 
     fig.add_trace(heatmap)
-    fig.update_layout(title=_get_title(food_web),
+    fig.update_layout(#title=_get_title(food_web),
                       width=width,
                       height=height,
                       autosize=True,
@@ -250,7 +250,7 @@ def draw_trophic_flows_heatmap(food_web, switch_axes=False, log_scale=False, wid
         heatmap.hovertemplate = hovertemplate
 
     fig = go.Figure(data=heatmap)
-    fig.update_layout(title=_get_title(food_web),
+    fig.update_layout(#title=_get_title(food_web),
                       width=width,
                       height=height,
                       autosize=True,
@@ -293,7 +293,7 @@ def draw_trophic_flows_distribution(food_web, normalize=True, width=1000, height
                  x="weights" if not normalize else "percentage",
                  color="to",
                  color_discrete_sequence=px.colors.sequential.Teal,
-                 title=_get_title(food_web),
+                 #title=_get_title(food_web),
                  height=width,
                  width=width,
                  template="simple_white",
@@ -314,7 +314,7 @@ def draw_network_for_nodes(food_web,
                            notebook=True,
                            height="800px",
                            width="100%",
-                           exclude_denrite_flows=True,
+                           no_flows_to_detritus=True,
                            **kwargs):
     '''Visualize subgraph of foodweb as a network.
     Parameters notebook, height, and width refer to initialization parameters of pyvis.network.Network.
@@ -345,9 +345,9 @@ def draw_network_for_nodes(food_web,
                  height=height,
                  width=width,
                  directed=True,
-                 layout=True,
-                 heading=food_web.title)
-    g = food_web.get_graph(mark_alive_nodes=True, exclude_denrite_flows=exclude_denrite_flows).copy()
+                 layout=True)
+                 #heading=food_web.title)
+    g = food_web.get_graph(mark_alive_nodes=True, no_flows_to_detritus=no_flows_to_detritus).copy()
 
     if not nodes:
         nodes = g.nodes()

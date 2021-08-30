@@ -11,7 +11,7 @@ Install
 -------
 
 1. Install orca first: `npm install -g electron@6.1.4 orca`
-2. In order to create animations, install ImageMagick: https://docs.wand-py.org/en/0.3.5/guide/install.html (on Linux: 'sudo apt-get install libmagickwand-dev')
+2. To create animations, install ImageMagick: https://docs.wand-py.org/en/0.3.5/guide/install.html (on Linux: 'sudo apt-get install libmagickwand-dev')
 2. Manually download ``foodwebs`` package from `GitHub <https://github.com/foodwebs/foodwebs/releases>`_ and run the following terminal command from the
 top-level source directory::
 
@@ -21,15 +21,15 @@ top-level source directory::
 Tutorial
 -------
 
-For code exmaples and functionality overview please refer to Jupyter Notebooks in the ``examples/`` directory.
-To obtain information on a specific function/method "function_name" please execute "help(function_name)".
+For code examples and functionality overview please refer to Jupyter Notebooks in the ``examples/`` directory.
+To get information on a specific function/method "function_name" please execute "help(function_name)".
 
 Testing
 -------
 To execute the tests run:
 $ pytest 
 
-Foodwebs  uses the Python ``pytest`` testing package.  You can learn more
+Foodwebs uses the Python ``pytest`` testing package.  You can learn more
 about pytest on their `homepage <https://pytest.org>`_.
 
 Bugs \ Questions
