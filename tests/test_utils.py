@@ -1,6 +1,6 @@
 import numpy as np
 
-import foodwebs as fw
+import foodwebviz as fw
 
 from trophic_levels import TROPHIC_LEVELS_REAL # TODO
 

@@ -12,7 +12,7 @@ python3.8 draw.py --scor_dir data/ --output plots/
 
 import os
 import click
-import foodwebs as fw
+import foodwebviz as fw
 
 
 @click.command('Simple script that generates plots for all foodwebs from given directory (containing SCOR files).')
@@ -32,7 +32,7 @@ def draw_heatmaps(scor_dir, output, boundary, show_trophic_layer, switch_axes, n
 
         * trophic flows distribution
 
-        * network visualisation (only if foodweb has less than 20 nodes)
+        * network visualization (only if foodweb has less than 20 nodes)
     '''
     for subdir, dirs, files in os.walk(scor_dir):
         for f in files:
@@ -43,7 +43,8 @@ def draw_heatmaps(scor_dir, output, boundary, show_trophic_layer, switch_axes, n
                                   boundary=boundary,
                                   normalization=normalization,
                                   show_trophic_layer=show_trophic_layer,
-                                  switch_axes=switch_axes)
+                                  switch_axes=switch_axes,
+                                  height=1000)
             fig.write_image(f'{output}/{f}_heatmap.png')
 
             fig = fw.draw_trophic_flows_distribution(food_web)

@@ -1,26 +1,24 @@
-from glob import glob
-import os
 import sys
 from setuptools import setup
 
 if sys.version_info[:2] < (3, 7):
-    sys.stderr.write(f'Foodwebs requires Python 3.7 or later ({sys.version_info[:2]} detected).\n')
+    sys.stderr.write(f'foodwebviz requires Python 3.7 or later ({sys.version_info[:2]} detected).\n')
     sys.exit(1)
 
 
-name = "foodwebs"
+name = "foodwebviz"
 description = "Python package for creating and visualizing foodwebs"
 authors = {
-    "Pawluczuk": ("Łukasz Pawluczuk", "lukpawlucz@gmail.com"),
-    "Iskrzyński": ("Mateusz Ikrzyński", ""),  # TODO
+    "Pawluczuk": ("Łukasz Pawluczuk", ""),
+    "Iskrzyński": ("Mateusz Ikrzyński", ""),
 }
 maintainer = ""
 maintainer_email = ""
 url = ""
-project_urls = {  # TODO
-    "Bug Tracker": "https://github.com/foodwebs/networkx/issues",
-    "Documentation": "",  # TODO
-    "Source Code": "https://github.com/foodwebs/networkx",
+project_urls = {
+    "Bug Tracker": "https://github.com/lpawluczuk/foodwebviz/issues",
+    "Documentation": "https://github.com/lpawluczuk/foodwebviz",
+    "Source Code": "https://github.com/lpawluczuk/foodwebviz",
 }
 platforms = ["Linux", "Mac OSX", "Windows", "Unix"]
 keywords = [
@@ -45,19 +43,14 @@ classifiers = [  # TODO
 ]
 
 
-with open("foodwebs/__init__.py") as fid:
+with open("foodwebviz/__init__.py") as fid:
     for line in fid:
         if line.startswith("__version__"):
             version = line.strip().split()[-1][1:-1]
             break
 
 packages = [
-    "foodwebs",
-#     "foodwebs.foodweb",
-#     "foodwebs.io",
-#     "foodwebs.normalization",
-#     "foodwebs.utils",
-#     "foodwebs.visualization"
+    "foodwebviz"
 ]
 
 

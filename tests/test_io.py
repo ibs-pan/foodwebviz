@@ -2,7 +2,7 @@ import pandas as pd
 import tempfile
 import os
 
-import foodwebs as fw
+import foodwebviz as fw
 
 
 def test_write_scor(food_web):

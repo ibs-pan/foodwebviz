@@ -2,7 +2,7 @@ import pandas as pd
 
 import pytest
 
-import foodwebs as fw
+import foodwebviz as fw
 
 
 NODE_DF = pd.DataFrame([
