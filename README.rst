@@ -12,7 +12,7 @@ Install
 
 1. Install orca first: `npm install -g electron@6.1.4 orca`
 2. To create animations, install ImageMagick: https://docs.wand-py.org/en/0.3.5/guide/install.html (on Linux: 'sudo apt-get install libmagickwand-dev')
-2. Manually download ``foodwebviz`` package from `GitHub <https://github.com/lpawluczuk/foodwebviz>`_ and run the following terminal command from the
+3. Manually download ``foodwebviz`` package from `GitHub <https://github.com/lpawluczuk/foodwebviz>`_ and run the following terminal command from the
 top-level source directory::
 
     $ pip install .
