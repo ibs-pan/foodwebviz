@@ -8,7 +8,7 @@ import plotly.express as px
 
 from pyvis.network import Network
 from collections import defaultdict
-
+import matplotlib.pyplot as plt
 import foodwebs as fw
 
 
@@ -55,7 +55,7 @@ def _get_trophic_layer(graph, from_nodes, to_nodes):
         ygap=0.2,
         zmin=min(z),
         zmax=max(z) + 3,
-        colorscale=[[0, 'rgb(235, 242, 244)'],[0.3,'rgb(183, 232, 248)'],[0.7,'rgb( 134, 248, 249 )'], [1.0, 'rgb(  162, 190, 255  )']],#'Grey',#'Teal',
+        colorscale=[[0, 'rgb(255, 255, 255)'],[0.2,'rgb(214, 233, 255)'],[0.4,'rgb(197, 218, 251)'],[0.6,'rgb(182, 201, 247)'],[0.8,'rgb( 168, 183, 240 )'], [1.0, 'rgb(  167, 167, 221 )']],#'Grey',#'Teal',
         name='Trophic Layer',
         hoverinfo='skip'
     )
@@ -146,7 +146,8 @@ def draw_heatmap(food_web, boundary=False, normalization='log',
         ygap=0.2,
         zmin=min(z),
         zmax=max(z),
-        colorscale=[[0.0 ,'rgb(223, 255, 71)' ], [0.3, 'rgb(  97, 210, 55  )'],[0.7, 'rgb(  44, 116, 68  )'],[1.0,'rgb( 92, 44, 145 )']],#'Emrld',  # 'Tealgrn',
+        colorscale=[[0.0 ,'rgb(222, 232, 84)' ], [0.2, 'rgb( 117, 188, 36)'],[0.4, 'rgb( 27, 167, 50 )'],[0.6, 'rgb( 28, 125, 57 )'],[0.8,'rgb(59, 28, 95)'],[1.0,'rgb(27, 15, 36 )']],
+        #[[0.0 ,'rgb(223, 255, 71)' ], [0.3, 'rgb(  97, 210, 55  )'],[0.7, 'rgb(  44, 116, 68  )'],[1.0,'rgb( 92, 44, 145 )']],#'Emrld',  # 'Tealgrn',
         hoverongaps=False,
         hovertemplate='%{y} --> %{x}: %{z:.3f}<extra></extra>'
     )
@@ -307,6 +308,9 @@ def draw_trophic_flows_distribution(food_web, normalize=True, width=1000, height
                  orientation='h')
     return fig
 
+def normalize_color(z_, minVal, maxVal, min_luminance=0.4, max_luminance=1):
+    return(np.interp(z_, (minVal, maxVal), (min_luminance, max_luminance)))
+
 
 def draw_network_for_nodes(food_web,
                            nodes=None,
@@ -354,8 +358,9 @@ def draw_network_for_nodes(food_web,
 
     g = g.edge_subgraph([(x[0], x[1]) for x in g.edges() if x[0].replace(
         f'{fw.NOT_ALIVE_MARK} ', '') in nodes or x[1].replace(f'{fw.NOT_ALIVE_MARK} ', '') in nodes])
-
-    a = {x: {'color': px.colors.sequential.Teal[(float(attrs['TrophicLevel']) * -1) + 4],
+    cmap=plt.cm.get_cmap('summer')
+    (min_tl, max_tl)=food_web.get_trophic_interval()
+    a = {x: {'color': cmap(normalize_color(float(attrs['TrophicLevel'])*-1, minVal=min_tl, maxVal=max_tl,min_luminance=0.4, max_luminance=0.88)),
              'level': -attrs['TrophicLevel'],
              'title': f'''{x}<br> TrophicLevel: {attrs["TrophicLevel"]:.2f}
                                 <br> Biomass: {attrs["Biomass"]:.2f}
