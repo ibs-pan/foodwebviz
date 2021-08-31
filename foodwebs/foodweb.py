@@ -123,7 +123,8 @@ class FoodWeb(object):
             each tuple is in a form of (from, to, weight).
 
         '''
-        return self.get_graph(boundary, mark_alive_nodes, normalization, no_flows_to_detritus).edges(data=True)
+        return (self.get_graph(boundary, mark_alive_nodes, normalization, no_flows_to_detritus)
+                .edges(data=True))
 
     def get_flow_matrix(self, boundary=False):
         '''Returns the flow (adjacency) matrix.

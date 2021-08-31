@@ -156,8 +156,9 @@ def normalization_factory(foodweb_graph_view, norm_type):
         'tst': tst_normalization
     }
 
-    if 'linear':
+    if norm_type == 'linear':
         return foodweb_graph_view
 
     if norm_type in normalization_methods:
         return normalization_methods[norm_type](foodweb_graph_view)
+    return foodweb_graph_view

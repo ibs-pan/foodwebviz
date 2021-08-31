@@ -355,7 +355,7 @@ def draw_network_for_nodes(food_web,
     g = g.edge_subgraph([(x[0], x[1]) for x in g.edges() if x[0].replace(
         f'{fw.NOT_ALIVE_MARK} ', '') in nodes or x[1].replace(f'{fw.NOT_ALIVE_MARK} ', '') in nodes])
 
-    a = {x: {'color': px.colors.sequential.Emrld[int(attrs['TrophicLevel'])],
+    a = {x: {'color': px.colors.sequential.Teal[(float(attrs['TrophicLevel']) * -1) + 4],
              'level': -attrs['TrophicLevel'],
              'title': f'''{x}<br> TrophicLevel: {attrs["TrophicLevel"]:.2f}
                                 <br> Biomass: {attrs["Biomass"]:.2f}
