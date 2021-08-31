@@ -45,10 +45,10 @@ Please report any bugs that you find `here <https://github.com/foodwebs/issues>`
 Citation
 -------
 
-To cite package foodwebs in publications use:
+When using FoodWebViz package please cite:
 
-# TODO
+# article in submission
 
 A BibTeX entry for LaTeX users is
 
-# TODO
+# article in submission
