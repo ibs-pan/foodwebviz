@@ -55,7 +55,7 @@ def _get_trophic_layer(graph, from_nodes, to_nodes):
         ygap=0.2,
         zmin=min(z),
         zmax=max(z) + 3,
-        colorscale='Teal',
+        colorscale=[[0, 'rgb(235, 242, 244)'],[0.3,'rgb(183, 232, 248)'],[0.7,'rgb( 134, 248, 249 )'], [1.0, 'rgb(  162, 190, 255  )']],#'Grey',#'Teal',
         name='Trophic Layer',
         hoverinfo='skip'
     )
@@ -146,7 +146,7 @@ def draw_heatmap(food_web, boundary=False, normalization='log',
         ygap=0.2,
         zmin=min(z),
         zmax=max(z),
-        colorscale='Emrld',  # 'Tealgrn',
+        colorscale=[[0.0 ,'rgb(223, 255, 71)' ], [0.3, 'rgb(  97, 210, 55  )'],[0.7, 'rgb(  44, 116, 68  )'],[1.0,'rgb( 92, 44, 145 )']],#'Emrld',  # 'Tealgrn',
         hoverongaps=False,
         hovertemplate='%{y} --> %{x}: %{z:.3f}<extra></extra>'
     )
