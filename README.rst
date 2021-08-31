@@ -1,7 +1,7 @@
-Foodwebs
-========
+FoodWebViz
+==========
 
-Foodwebs is a Python package for the creation and visualization of foodwebs (trophic networks).
+FoodWebViz is a Python package for the creation and visualization of food webs (trophic networks).
 
 - **Source:** https://github.com/foodwebs
 - **Bug reports:** https://github.com/foodwebs/issues
@@ -31,7 +31,7 @@ Testing
 To execute the tests run:
 $ pytest 
 
-Foodwebs uses the Python ``pytest`` testing package.  You can learn more
+FoodWebViz uses the Python ``pytest`` testing package.  You can learn more
 about pytest on their `homepage <https://pytest.org>`_.
 
 Bugs \ Questions
