@@ -1,5 +1,6 @@
 '''Foodweb's visualization methods.'''
 import math
+import decimal
 import numpy as np
 import pandas as pd
 import networkx as nx
@@ -18,6 +19,9 @@ __all__ = [
     'draw_trophic_flows_distribution',
     'draw_network_for_nodes'
 ]
+
+
+decimal.getcontext().rounding = decimal.ROUND_HALF_UP
 
 
 def _get_title(food_web, limit=150):
@@ -81,7 +85,10 @@ def _get_trophic_flows(food_web):
         for m, m_trophic in set(graph.nodes(data='TrophicLevel')):
             weight = graph.get_edge_data(n, m, default=0)
             if weight != 0:
-                trophic_flows[(round(n_trophic), round(m_trophic))] += weight['weight']
+                n_trophic_int = decimal.Decimal(n_trophic).to_integral_value()
+                m_trophic_int = decimal.Decimal(m_trophic).to_integral_value()
+
+                trophic_flows[(n_trophic_int, m_trophic_int)] += weight['weight']
     return pd.DataFrame([(x, y, w) for (x, y), w in trophic_flows.items()], columns=['from', 'to', 'weights'])
 
 
