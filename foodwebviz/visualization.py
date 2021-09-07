@@ -304,7 +304,7 @@ def draw_trophic_flows_distribution(food_web, normalize=True, width=1000, height
                  labels={
                      'from': 'Trophic Layer From',
                      'to': 'Trophic Layer To',
-                     'percentage': 'Percentage of flows'},
+                     'percentage': 'Percentage of flow'},
                  orientation='h')
     return fig
 
@@ -349,8 +349,8 @@ def draw_network_for_nodes(food_web,
                  height=height,
                  width=width,
                  directed=True,
-                 layout=True)
-                 #heading=food_web.title)
+                 layout=True,
+                 heading='') #food_web.title)
     g = food_web.get_graph(mark_alive_nodes=True, no_flows_to_detritus=no_flows_to_detritus).copy()
 
     if not nodes:
