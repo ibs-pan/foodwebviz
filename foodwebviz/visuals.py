@@ -12,7 +12,7 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 from numpy.random import uniform
-from part_viz_utils import squeeze_map
+from utils import squeeze_map
 
 #here some global design choices
 
