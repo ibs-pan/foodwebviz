@@ -13,3 +13,5 @@ from foodwebviz.utils import *
 from foodwebviz.visualization import *
 
 from foodwebviz.foodweb import *
+
+from foodwebviz.create_animated_food_web import *

@@ -12,7 +12,8 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 from numpy.random import uniform
-from utils import squeeze_map
+
+from foodwebviz.utils import squeeze_map
 
 #here some global design choices
 
@@ -52,6 +53,8 @@ def particlesInOneFlow(nOne_, x1, x2, y1, y2, start_node, max_part):
     return (pd.DataFrame(d))
 
 # now initialize particles
+
+
 def init_particles(netIm, if_imports, if_exports, max_part):
     # given the network image with node positions
     # and the number of particles flowing between them, initialize particles
@@ -82,7 +85,7 @@ def init_particles(netIm, if_imports, if_exports, max_part):
 
 
 # SPECIFY MATCHING COLORS OF ELEMENTS
-def getSqrt(row, x, y):  
+def getSqrt(row, x, y):
     # computes the color based on colormap cm and two dataframe columns
     return(np.sqrt(row[x]**2+row[y]**2))
 
@@ -98,7 +101,7 @@ def getColors_continuous(df, x, y, max_luminance, cmap):
     return([cmap(x) for x in setColor(z, z.min(), z.max(), max_luminance)])  # version with continuous palette
 
 
-def get_color_for_tl(df, y, max_luminance, cmap):  
+def get_color_for_tl(df, y, max_luminance, cmap):
     # uses only the trophic level to define color on a continuous scale
     return([cmap(x) for x in setColor(df[y], df[y].min(), df[y].max(), max_luminance)])
 
