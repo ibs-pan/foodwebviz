@@ -336,9 +336,6 @@ def draw_trophic_flows_distribution(food_web, normalize=True, width=1000, height
                  orientation='h')
     return fig
 
-def normalize_color(z_, minVal, maxVal, min_luminance=0.4, max_luminance=1):
-    return(np.interp(z_, (minVal, maxVal), (min_luminance, max_luminance)))
-
 
 def draw_network_for_nodes(food_web,
                            nodes=None,
@@ -386,9 +383,9 @@ def draw_network_for_nodes(food_web,
 
     g = g.edge_subgraph([(x[0], x[1]) for x in g.edges() if x[0].replace(
         f'{fw.NOT_ALIVE_MARK} ', '') in nodes or x[1].replace(f'{fw.NOT_ALIVE_MARK} ', '') in nodes])
-    cmap=plt.cm.get_cmap('summer')
-    (min_tl, max_tl)=food_web.get_trophic_interval()
-    a = {x: {'color': cmap(normalize_color(float(attrs['TrophicLevel'])*-1, minVal=min_tl, maxVal=max_tl,min_luminance=0.4, max_luminance=0.88)),
+
+    a = {x: {'color': [x[1] for x in TROPHIC_LAYER_COLORS]
+                      [int(decimal.Decimal(attrs['TrophicLevel']).to_integral_value())],
              'level': -attrs['TrophicLevel'],
              'title': f'''{x}<br> TrophicLevel: {attrs["TrophicLevel"]:.2f}
                                 <br> Biomass: {attrs["Biomass"]:.2f}
@@ -406,6 +403,7 @@ def draw_network_for_nodes(food_web,
     nt.set_edge_smooth('discrete')
     nt.show_buttons(filter_='physics')
     return nt.show(file_name)
+
 
 def animate(filename, func, frames, interval, fig=None, figsize=(6.5, 6.5), fps=None, dpi=None):
     """ Creates an animated GIF of a matplotlib.
