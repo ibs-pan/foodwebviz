@@ -1,5 +1,4 @@
 '''Foodweb's visualization methods.'''
-import math
 import decimal
 import numpy as np
 import pandas as pd
@@ -22,6 +21,24 @@ __all__ = [
 
 
 decimal.getcontext().rounding = decimal.ROUND_HALF_UP
+
+TROPHIC_LAYER_COLORS = [
+    [0, 'rgb(255, 255, 255)'],
+    [0.2, 'rgb(214, 233, 255)'],
+    [0.4, 'rgb(197, 218, 251)'],
+    [0.6, 'rgb(182, 201, 247)'],
+    [0.8, 'rgb( 168, 183, 240 )'],
+    [1.0, 'rgb(  167, 167, 221 )']
+]
+
+HEATMAP_COLORS = [
+    [0.0, 'rgb(222, 232, 84)'],
+    [0.2, 'rgb( 117, 188, 36)'],
+    [0.4, 'rgb( 27, 167, 50 )'],
+    [0.6, 'rgb( 28, 125, 57 )'],
+    [0.8, 'rgb(59, 28, 95)'],
+    [1.0, 'rgb(27, 15, 36 )']
+]
 
 
 def _get_title(food_web, limit=150):
@@ -59,36 +76,38 @@ def _get_trophic_layer(graph, from_nodes, to_nodes):
         ygap=0.2,
         zmin=min(z),
         zmax=max(z) + 3,
-        colorscale=[[0, 'rgb(255, 255, 255)'],[0.2,'rgb(214, 233, 255)'],[0.4,'rgb(197, 218, 251)'],[0.6,'rgb(182, 201, 247)'],[0.8,'rgb( 168, 183, 240 )'], [1.0, 'rgb(  167, 167, 221 )']],#'Grey',#'Teal',
+        colorscale=TROPHIC_LAYER_COLORS,
         name='Trophic Layer',
         hoverinfo='skip'
     )
 
 
-def _get_trophic_flows(food_web):
+def _get_trophic_flows(food_web, normalization='linear'):
     '''For each pair of trophic levels assigns sum of all nodes' weights in that pair.
 
     Parameters
     ----------
     food_web : foodwebs.FoodWeb
         Foodweb object.
+    normalization : string, optional (default=linear)
+        Defines method of graph edges normalization.
+        Available options are: 'diet', 'log', 'donor_control',
+        'predator_control', 'mixed_control', 'linear' and 'tst'.
 
     Returns
     -------
     trophic_flows : pd.DataFrame
         Columns: ["from", "to", "wegiths"], where "from" and "to" are trophic levels.
     '''
-    graph = food_web.get_graph()
+    graph = food_web.get_graph(False, mark_alive_nodes=False, normalization=normalization)
 
     trophic_flows = defaultdict(float)
-    for n, n_trophic in set(graph.nodes(data='TrophicLevel')):
-        for m, m_trophic in set(graph.nodes(data='TrophicLevel')):
-            weight = graph.get_edge_data(n, m, default=0)
-            if weight != 0:
-                n_trophic_int = decimal.Decimal(n_trophic).to_integral_value()
-                m_trophic_int = decimal.Decimal(m_trophic).to_integral_value()
+    trophic_levels = {node: level for node, level in graph.nodes(data='TrophicLevel')}
+    for edge in graph.edges(data=True):
+        trophic_from = decimal.Decimal(trophic_levels[edge[0]]).to_integral_value()
+        trophic_to = decimal.Decimal(trophic_levels[edge[1]]).to_integral_value()
+        trophic_flows[(trophic_from, trophic_to)] += edge[2]['weight']
 
-                trophic_flows[(n_trophic_int, m_trophic_int)] += weight['weight']
     return pd.DataFrame([(x, y, w) for (x, y), w in trophic_flows.items()], columns=['from', 'to', 'weights'])
 
 
@@ -153,8 +172,7 @@ def draw_heatmap(food_web, boundary=False, normalization='log',
         ygap=0.2,
         zmin=min(z),
         zmax=max(z),
-        colorscale=[[0.0 ,'rgb(222, 232, 84)' ], [0.2, 'rgb( 117, 188, 36)'],[0.4, 'rgb( 27, 167, 50 )'],[0.6, 'rgb( 28, 125, 57 )'],[0.8,'rgb(59, 28, 95)'],[1.0,'rgb(27, 15, 36 )']],
-        #[[0.0 ,'rgb(223, 255, 71)' ], [0.3, 'rgb(  97, 210, 55  )'],[0.7, 'rgb(  44, 116, 68  )'],[1.0,'rgb( 92, 44, 145 )']],#'Emrld',  # 'Tealgrn',
+        colorscale=HEATMAP_COLORS,
         hoverongaps=False,
         hovertemplate='%{y} --> %{x}: %{z:.3f}<extra></extra>'
     )
@@ -163,7 +181,7 @@ def draw_heatmap(food_web, boundary=False, normalization='log',
     if normalization == 'log':
         z_orginal = [x[2]['weight'] for x in food_web.get_graph(
             boundary, mark_alive_nodes=True, normalization=None).edges(data=True)]
-        tickvals = range(int(math.log10(min(z_orginal))) + 1, int(math.log10(max(z_orginal))) + 1)
+        tickvals = range(int(np.log10(min(z_orginal))) + 1, int(np.log10(max(z_orginal))) + 1)
         ticktext = [10**x for x in range(len(tickvals))]
  
         heatmap.colorbar = dict(
@@ -200,7 +218,8 @@ def draw_heatmap(food_web, boundary=False, normalization='log',
     return fig
 
 
-def draw_trophic_flows_heatmap(food_web, switch_axes=False, log_scale=False, width=1200, height=800):
+
+def draw_trophic_flows_heatmap(food_web, switch_axes=False, normalization='log', width=1200, height=800):
     '''Visualize flows between foodweb's trophic levels as a heatmap. The
     color at (x,y) represents the sum of flows from trophic level x to
     trophic level y.
@@ -209,8 +228,10 @@ def draw_trophic_flows_heatmap(food_web, switch_axes=False, log_scale=False, wid
     ----------
     food_web : foodwebs.FoodWeb
         Foodweb object.
-    log_scale : bool, optional (default=False)
-        If True, logarithm of flows will be showed.
+    normalization : string, optional (default=log)
+        Defines method of graph edges normalization.
+        Available options are: 'diet', 'log', 'donor_control',
+        'predator_control', 'mixed_control', 'linear' and 'tst'.
     switch_axes : bool, optional (default=False)
         If True, X axis will represent "to" trophic levels and Y - "from".
     width : int, optional (default=1200)
@@ -227,30 +248,28 @@ def draw_trophic_flows_heatmap(food_web, switch_axes=False, log_scale=False, wid
     else:
         hovertemplate = '%{x} --> %{y}: %{z:.3f}<extra></extra>'
 
-    tf_pd = _get_trophic_flows(food_web)
-    z = np.log10(tf_pd['weights']) if log_scale else tf_pd['weights']
-
+    tf_pd = _get_trophic_flows(food_web, normalization=normalization)
     heatmap = go.Heatmap(x=tf_pd['to' if not switch_axes else 'from'],
                          y=tf_pd['from' if not switch_axes else 'to'],
-                         z=z,
+                         z=tf_pd['weights'],
                          xgap=0.2,
                          ygap=0.2,
-                         colorscale='Teal',
+                         colorscale=TROPHIC_LAYER_COLORS,
                          hoverongaps=False,
                          hovertemplate=hovertemplate)
 
-    if log_scale:
-        tickvals = range(int(math.log10(min(tf_pd['weights']))) + 1,
-                         int(math.log10(max(tf_pd['weights']))) + 1)
+    if normalization == 'log':
+        z_orginal = _get_trophic_flows(food_web, normalization='linear').weights.values
+        tickvals = range(int(np.log10(min(z_orginal))) + 1, int(np.log10(max(z_orginal))) + 1)
         ticktext = [10**x for x in range(len(tickvals))]
-
+ 
         heatmap.colorbar = dict(
             tick0=0,
             tickmode='array',
             tickvals=list(tickvals),
             ticktext=ticktext
         )
-        heatmap.customdata = tf_pd['weights']
+        heatmap.customdata = z_orginal
         if switch_axes:
             hovertemplate = '%{x} --> %{y}: %{customdata:.3f}<extra></extra>'
         else:
@@ -300,14 +319,14 @@ def draw_trophic_flows_distribution(food_web, normalize=True, width=1000, height
                  y="from",
                  x="weights" if not normalize else "percentage",
                  color="to",
-                 color_discrete_sequence=px.colors.sequential.Teal,
+                 color_discrete_sequence=[x[1] for x in TROPHIC_LAYER_COLORS],
                  #title=_get_title(food_web),
                  height=width,
                  width=width,
                  template="simple_white",
                  hover_data={'from': ':d',
                              'to': ':d',
-                             'percentage':  ':.4f'},
+                             "weights" if not normalize else "percentage":  ':.4f'},
                  labels={
                      'from': 'Trophic Layer From',
                      'to': 'Trophic Layer To',
