@@ -218,7 +218,7 @@ def add_vertices(ax, yDf, r_min, r_max, font_size, alpha_, map_fun=np.log10):  #
     yDf.apply(addVertex, axis='columns', ax=ax, r_min=r_min, r_max=r_max, min_bio=np.min(yDf['bio']), max_bio=np.max(
         yDf['bio']), font_size=font_size, alpha_=alpha_, map_fun=map_fun, list_of_abbrev=list_of_abbrev)
     list_of_abbrev.sort()
-    abbrev_leg = plt.text(100, 25, 'Abbreviations used:\n'+''.join(list_of_abbrev),
+    abbrev_leg = plt.text(100, 18, 'Abbreviations used:\n'+''.join(list_of_abbrev),
                           fontsize=font_size, horizontalalignment='right',  verticalalignment='bottom')
     abbrev_leg.set_bbox(dict(facecolor='white', alpha=0.7, edgecolor='white', pad=0.1))
 

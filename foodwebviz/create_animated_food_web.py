@@ -27,15 +27,6 @@ def adapt_dpi(node_nr):  # adapt the resolution to the number of nodes
 def adapt_particle_size(particles_nr, node_nr):  # adapt size of flow particles
     return(max(14000/particles_nr, 2))
 
-#INPUT
-def readNetImage(net_path, k, min_part_num, map_fun, max_part):  # read a netImage from a file
-    net = fw.read_from_SCOR(net_path)
-    return(ni.netImage(net, False, k_=k, min_part_num=min_part_num, map_fun=map_fun, max_part=max_part))
-# def readNetImage(net_path,k, min_part_num): #read a netImage from a file
-#     net = fw.read_from_SCOR(net_path)
-#     return(ni.netImage(net,False,k_=k, min_part_num=min_part_num))
-
-
 def adapt_node_and_font_size(n, maxwidth):  # adapt the minimal node size to the number of nodes
     return((15/maxwidth, max(16, 60/maxwidth)))
     #0.5 for 20 was ok
@@ -92,7 +83,7 @@ scor_file_in = 'Alaska_Prince_William_Sound.scor'  # 'atlss_cypress_wet.dat'
 gif_file_out = 'Example.gif'
 
 
-def animate_foodweb(scor_file_in, gif_file_out, fps=10, anim_len=1, trails=1,
+def animate_foodweb(foodweb, gif_file_out, fps=10, anim_len=1, trails=1,
                     min_node_radius=0.5, max_node_radius=10, min_part_num=1,
                     max_part_num=20, map_fun=np.sqrt, if_imports=True, if_exports=False,
                     how_to_color='tl', cmap=plt.cm.get_cmap('viridis'), max_luminance=0.85):
@@ -157,11 +148,9 @@ def animate_foodweb(scor_file_in, gif_file_out, fps=10, anim_len=1, trails=1,
     # how long should the animation be in s
     frameNumber = fps*anim_len  # number of frames
 
-    # netIm=readNetImage('./examples/data/'+filename,80, min_part_num=min_part_num)# Iceland_227.dat')#BlackSea_433.dat')#
-    # particles=init_particles(netIm,if_imports,if_exports,max_part_num)
-    # particles=assign_colors(particles,netIm,how_to_color=how_to_color, max_luminance=max_luminance, cmap=cmap) #how_to_color='discrete' to paint each node differently for clarity
-    netIm = readNetImage('../examples/data/'+scor_file_in, 80, min_part_num=min_part_num,
-                         map_fun=map_fun, max_part=max_part_num)
+    #create a static graph representation of the food web and map flows and biomass to particle numbers and node sizes    
+    netIm = ni.netImage(foodweb, False, k_=80, min_part_num=min_part_num, map_fun=map_fun, max_part=max_part_num)
+    
     particles = init_particles(netIm, if_imports, if_exports, max_part=max_part_num)
 
     # how_to_color='discrete' to paint each node differently for clarity
