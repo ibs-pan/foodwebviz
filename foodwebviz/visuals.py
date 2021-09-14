@@ -21,7 +21,7 @@ f = 60  # FPS
 interval = 1000/f  # time between frames in ms
 lengthT = 1  # how long should the animation be in s
 frameNumber = f*lengthT  # number of frames in ms
-v = 1/(5*lengthT)  # global velocity along the lines so that it loops back on itself
+v =0.1# 1/(5*lengthT)  # global velocity along the lines so that it loops back on itself
 
 
 def stretch(x, l):
@@ -29,7 +29,7 @@ def stretch(x, l):
 
 
 # distribute particles
-def particlesInOneFlow(nOne_, x1, x2, y1, y2, start_node, max_part):
+def particles_in_one_flow(nOne_, x1, x2, y1, y2, start_node, max_part, map_fun):
     # return particles moving from (x1,y1) to (x2, y2) and their start_node saved to define color later
     # spaced randomly (uniform dist) along a line defined by start and finish
     # with s in [0,1] tracing their progress along the line
@@ -38,9 +38,13 @@ def particlesInOneFlow(nOne_, x1, x2, y1, y2, start_node, max_part):
     # we want the nOne to represent flow density, so we need to normalize to path length
     nOne = int(nOne_*np.sqrt(lx**2+ly**2)/20)
     s = uniform(0, 1, nOne)
-    lxd = np.interp(nOne_, [0, max_part], [0, 0.7])  # max(lx/20,3)
-    distortX = uniform(-lxd, lxd, nOne)
-    distortY = uniform(-lxd, lxd, nOne)  # spread them randomly also in direction perpendicular to the line
+    #we spread the particles randomly in direction perpendicular to the line
+    #making larger flows broader
+    #lxd = np.interp(nOne_, [0, max_part], [0, 1.5])  # max(lx/20,3)
+    width = squeeze_map(nOne_, 1, max_part, map_fun, 0.05, 3)
+    
+    distortX = uniform(-width/2, width/2, nOne) # spread them randomly
+    distortY = uniform(-width/2, width/2, nOne)   
     x1_ = stretch(x1, nOne)
     y1_ = stretch(y1, nOne)
     if ly != 0.0:
@@ -55,7 +59,7 @@ def particlesInOneFlow(nOne_, x1, x2, y1, y2, start_node, max_part):
 # now initialize particles
 
 
-def init_particles(netIm, if_imports, if_exports, max_part):
+def init_particles(netIm, if_imports, if_exports, max_part, map_fun):
     # given the network image with node positions
     # and the number of particles flowing between them, initialize particles
     xs = netIm.get_xs()
@@ -68,18 +72,18 @@ def init_particles(netIm, if_imports, if_exports, max_part):
         for j in xs.index:
             #first the system flows
             if partNumber_sys_flows.loc[i, j] != 0.0:  # we do nothing for zero flows
-                particles = pd.concat([particles, particlesInOneFlow(
-                    partNumber_sys_flows.loc[i, j], xs[i], xs[j], ys[i], ys[j], start_node=i, max_part=max_part)])
+                particles = pd.concat([particles, particles_in_one_flow(
+                    partNumber_sys_flows.loc[i, j], xs[i], xs[j], ys[i], ys[j], start_node=i, max_part=max_part, map_fun=map_fun)])
         if if_imports:
-            particles = pd.concat([particles, particlesInOneFlow(
-                partNumber_imports.loc[i], xs[i], xs[i], 0.0, ys[i], start_node=i, max_part=max_part)])
+            particles = pd.concat([particles, particles_in_one_flow(
+                partNumber_imports.loc[i], xs[i], xs[i], 0.0, ys[i], start_node=i, max_part=max_part, map_fun=map_fun)])
         if if_exports:
             if xs[i] < 50:
-                particles = pd.concat([particles, particlesInOneFlow(
-                    partNumber_exports.loc[i], xs[i], 0.0, ys[i], ys[i], start_node=i, max_part=max_part)])
+                particles = pd.concat([particles, particles_in_one_flow(
+                    partNumber_exports.loc[i], xs[i], 0.0, ys[i], ys[i], start_node=i, max_part=max_part, map_fun=map_fun)])
             else:
-                particles = pd.concat([particles, particlesInOneFlow(
-                    partNumber_exports.loc[i], xs[i], 100.0, ys[i], ys[i], start_node=i, max_part=max_part)])
+                particles = pd.concat([particles, particles_in_one_flow(
+                    partNumber_exports.loc[i], xs[i], 100.0, ys[i], ys[i], start_node=i, max_part=max_part, map_fun=map_fun)])
     particles = particles.reset_index()
     return(particles)
 
@@ -107,15 +111,8 @@ def get_color_for_tl(df, y, max_luminance, cmap):
 
 
 # specify colors using coordinates in columns x and y of the dataframe df
-def get_node_colors_discrete(length, cmap):
-    return([cmap[x % len(cmap)] for x in range(length)])
-
-
-def assign_colors(particles, netIm, how_to_color, max_luminance, cmap):
-    if how_to_color == 'discrete':
-        netIm.set_colors(get_node_colors_discrete(len(netIm.nodes), max_luminance, cmap=cmap))
-    else:
-        netIm.set_colors(get_color_for_tl(netIm.nodes, 'y', max_luminance, cmap=cmap))
+def assign_colors(particles, netIm, max_luminance, cmap):
+    netIm.set_colors(get_color_for_tl(netIm.nodes, 'y', max_luminance, cmap=cmap))
     particles['color'] = particles.apply(lambda x: netIm.nodes.loc[x['start'], 'color'], axis='columns')
     return(particles)
 
@@ -129,7 +126,8 @@ def getVelocity(row, lx, ly):  # get axial velocity along lx given the direction
 def fading_formula(x, max_width):
     #we adapt the fading to max_width as a proxy for the complexity of the network
     min_alpha = 1/max_width  # we shift the transparency by the minimal value that is attained in the middle
-    return(min(1, 4*((x-0.5)**2) + min_alpha))  # 1 at ends, 0.5 in the middle, parabolic dependence
+    exponent_correction=2*int(max_width/8)
+    return(max([min([1, (np.abs(x-0.5)**(2+exponent_correction))*2**(2+exponent_correction)]), min_alpha]))  # 1 at ends, 0.5 in the middle, parabolic dependence
 
 
 # we make particles fade a bit when far from both the source and the target
@@ -164,13 +162,10 @@ def move(particles, alpha_, t, max_width):
     particles = update_transparency(particles, alpha_, max_width)
 
 
-def get_color_with_transparency(particle_row, how_to_color):  # set transparency within RGBA colours
+def get_color_with_transparency(particle_row):  # set transparency within RGBA colours
     new_color = list(particle_row['color'])
-    if how_to_color == 'discrete':
-        new_color.append(particle_row['alpha'])  # discrete cmaps have only three numbers, without alpha
-    else:
-        # continuous cmaps have longer tuple with alpha as the fourth item:
-        new_color[3] = particle_row['alpha']
+    # continuous cmaps have longer tuple with alpha as the fourth item:
+    new_color[3] = particle_row['alpha']
     return(tuple(new_color))
 
 #Adding vertices
@@ -218,7 +213,7 @@ def add_vertices(ax, yDf, r_min, r_max, font_size, alpha_, map_fun=np.log10):  #
     yDf.apply(addVertex, axis='columns', ax=ax, r_min=r_min, r_max=r_max, min_bio=np.min(yDf['bio']), max_bio=np.max(
         yDf['bio']), font_size=font_size, alpha_=alpha_, map_fun=map_fun, list_of_abbrev=list_of_abbrev)
     list_of_abbrev.sort()
-    abbrev_leg = plt.text(100, 18, 'Abbreviations used:\n'+''.join(list_of_abbrev),
+    abbrev_leg = plt.text(100, 17, 'Abbreviations used:\n'+''.join(list_of_abbrev),
                           fontsize=font_size, horizontalalignment='right',  verticalalignment='bottom')
     abbrev_leg.set_bbox(dict(facecolor='white', alpha=0.7, edgecolor='white', pad=0.1))
 
@@ -236,11 +231,11 @@ def add_trophic_level_legend(ax, pos_df, font_size):  # adds a legend of trophic
         i += 1
 
 
-def layer(frame, particles,  netIm, alpha_, t=interval, how_to_color='discrete', max_width=8, particle_size=2):
+def layer(frame, particles,  netIm, alpha_, t=interval, max_width=8, particle_size=2):
     # print('Frame with alpha '+str(alpha_)+' step '+str(t))
     move(particles, alpha_, t, max_width)
     # make particles fade except when around their target or start nodes
-    rgba_colors = particles.apply(get_color_with_transparency, axis='columns', how_to_color=how_to_color)
+    rgba_colors = particles.apply(get_color_with_transparency, axis='columns')
     plt.scatter(particles.loc[:, 'x'], particles.loc[:, 'y'],
                 s=particle_size, c=rgba_colors, edgecolors={'none'})
     # Create a new colormap from the colors cut to 0.8 (to avoid too light colors)
