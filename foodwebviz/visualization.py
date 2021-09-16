@@ -254,7 +254,7 @@ def draw_trophic_flows_heatmap(food_web, switch_axes=False, log_scale=False, wid
                          z=np.log10(tf_pd.weights) if log_scale else tf_pd.weights,
                          xgap=0.2,
                          ygap=0.2,
-                         colorscale=TROPHIC_LAYER_COLORS,
+                         colorscale=HEATMAP_COLORS,
                          hoverongaps=False,
                          hovertemplate=hovertemplate)
 
