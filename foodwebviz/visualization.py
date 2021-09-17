@@ -329,7 +329,7 @@ def draw_trophic_flows_distribution(food_web, normalize=True, width=1000, height
 
 def draw_network_for_nodes(food_web,
                            nodes=None,
-                           file_name='food_web.html',
+                           file_name='interactive_food_web_graph.html',
                            notebook=True,
                            height="800px",
                            width="100%",
