@@ -21,10 +21,9 @@ top-level source directory (on Windows use e.g. Anaconda Prompt):
 
 Tutorial
 --------
-``examples/visualization.ipynb`` is an interactive Jupyter Notebook with code examples and functionality overview
-``examples/sample_output`` contains examples of visualisations (screenshots of interactive heatmap and graph visualisations)
+- ``examples/visualization.ipynb`` is an interactive Jupyter Notebook with code examples and functionality overview
+- ``examples/sample_output`` contains examples of visualisations (screenshots of interactive heatmap and graph visualisations)
 To get information on a specific function/method "function_name" please execute "help(function_name)".
-
 You can play with the tutorial Jupyter Notebook without installing the package locally: https://mybinder.org/v2/gh/ibs-pan/foodwebviz/master?filepath=examples%2Fvisualization.ipynb
 
 Testing
@@ -38,9 +37,7 @@ about pytest on their `homepage <https://pytest.org>`_.
 Bugs \ Questions
 -------
 
-In case of questions / problems please report them [here](https://github.com/ibs-pan/foodwebviz/issues)
-
-Please report any bugs that you find `here <https://github.com/lpawluczuk/foodwebviz/issues>`_.
+In case of questions / problems / bugs please report them `here <https://github.com/ibs-pan/foodwebviz/issues>`_.
 
 
 Citation
