@@ -91,7 +91,7 @@ def _get_trophic_layer(graph, from_nodes, to_nodes):
     )
 
 
-def _get_trophic_flows(food_web):
+def _get_trophic_flows(food_web, boundary=False):
     '''For each pair of trophic levels assigns sum of all nodes' weights in that pair.
 
     Parameters
@@ -108,7 +108,7 @@ def _get_trophic_flows(food_web):
     trophic_flows : pd.DataFrame
         Columns: ["from", "to", "wegiths"], where "from" and "to" are trophic levels.
     '''
-    graph = food_web.get_graph(False, mark_alive_nodes=False, normalization='linear')
+    graph = food_web.get_graph(boundary, mark_alive_nodes=False, normalization='linear')
 
     trophic_flows = defaultdict(float)
     trophic_levels = {node: level for node, level in graph.nodes(data='TrophicLevel')}
@@ -329,7 +329,7 @@ def draw_trophic_flows_distribution(food_web, normalize=True, width=1000, height
 
 def draw_network_for_nodes(food_web,
                            nodes=None,
-                           file_name='interactive_food_web_graph.html',
+                           file_name='interactive_food_web.html',
                            notebook=True,
                            height="800px",
                            width="100%",
@@ -349,12 +349,14 @@ def draw_network_for_nodes(food_web,
         Nodes to include in subgraph to visualize.
     file_name : string, optional (default="food_web.html")
         File to save network (in html format)
-    notebook - bool, optional (default=True)
+    notebook : bool, optional (default=True)
         True if using jupyter notebook.
     height : string, optional (default="800px")
         Height of the canvas. See: pyvis.network.Network.hrepulsion
     width : string, optional (default="100%")
         Width of the canvas. See: pyvis.network.Network.hrepulsion
+    no_flows_to_detritus : bool, optional (default=True)
+        True if only flows to living nodes should be drawn
 
     Returns
     -------
