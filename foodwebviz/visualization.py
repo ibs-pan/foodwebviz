@@ -355,6 +355,9 @@ def draw_network_for_nodes(food_web,
         Height of the canvas. See: pyvis.network.Network.hrepulsion
     width : string, optional (default="100%")
         Width of the canvas. See: pyvis.network.Network.hrepulsion
+    no_flows_to_detritus : bool, optional (default=True)
+        True if only flows to living nodes should be drawn
+
 
     Returns
     -------
