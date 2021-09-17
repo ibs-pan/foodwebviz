@@ -28,7 +28,7 @@ def adapt_particle_size(particles_nr, node_nr):  # adapt size of flow particles
     return(max(14000/particles_nr, 0.5))
 
 def adapt_node_and_font_size(n, maxwidth):  # adapt the minimal node size to the number of nodes
-    return((15/maxwidth, max(16, 60/maxwidth)))
+    return((15/maxwidth, max(10, 60/maxwidth)))
     #0.5 for 20 was ok
     #0.05 for 100?
 
