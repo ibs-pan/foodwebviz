@@ -31,7 +31,8 @@ top-level source directory (on Windows use e.g. Anaconda Prompt):
 Tutorial
 --------
 - ``examples/sample_output`` contains examples of visualisations (screenshots of interactive heatmap and graph visualisations)
-- ``examples/visualization.ipynb`` is an interactive Jupyter Notebook with code examples and functionality overview
+- ``examples/visualization.ipynb`` is an interactive Jupyter Notebook with code examples and functionality overview.
+
 To get information on a specific function/method "function_name" please execute "help(function_name)".
 You can also play with the tutorial Jupyter Notebook without installing the package locally: https://mybinder.org/v2/gh/ibs-pan/foodwebviz/master?filepath=examples%2Fvisualization.ipynb
 
