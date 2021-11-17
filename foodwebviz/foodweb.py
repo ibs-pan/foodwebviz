@@ -185,6 +185,7 @@ class FoodWeb(object):
                 {self.node_df["TrophicLevel"]}\n
                 '''
     def get_all_to_living_flows(self):  #setting flows to non-living to zero
+        # TODO delete
         isLiving=self.node_df['IsAlive']
         self.flow_matrix.transpose()[~isLiving] = 0.0
         return(self.flow_matrix)

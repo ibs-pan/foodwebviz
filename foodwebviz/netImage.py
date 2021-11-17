@@ -14,12 +14,11 @@ import itertools
 from numpy.random import uniform
 import random
 
-import foodwebviz as fw
 from foodwebviz.utils import squeeze_map
 
 
 def list_of_regular_x_pos(row, maxWidth):  # return regularly spaced x positions for num number of items
-      return(list(np.linspace(10+5*(maxWidth-row['TL']), 90-5*(maxWidth-row['TL']), num=row['TL'])))
+    return(list(np.linspace(10+5*(maxWidth-row['TL']), 90-5*(maxWidth-row['TL']), num=row['TL'])))
 
 
 class netImage(object):
@@ -47,28 +46,45 @@ class netImage(object):
         self.title = net.title
         self.nodes = self.calc_node_attributes(net)
         self.particle_numbers = self.get_particle_numbers(
-            net, withDetritus, min_part_num=min_part_num, map_fun=map_fun, max_part=max_part)
-        #now optimize node positions based on spring layout / Fruchterman - Rheingold algorithm
+            net=net,
+            withDetritus=withDetritus,
+            min_part_num=min_part_num,
+            map_fun=map_fun,
+            max_part=max_part)
+        
+        # now optimize node positions based on spring layout / Fruchterman-Rheingold algorithm
+        self.nodes[['x', 'y']] = self._fruchterman_reingold(
+            A=net.flow_matrix.applymap(lambda x: int(x > 0.0)),
+            dim=2,
+            k=k_,
+            pos=self.get_node_pos_as_array(),
+            iterations=20,
+            hold_dim=1,
+            HardSpheres=False,
+            if_only_attraction=True)
 
-        def is_positive(x):
-            if x > 0.0:
-                 return(1.0)
-            else:
-                  return(0.0)
+        # TODO is there any reason why it's twice here?
+        self.nodes[['x', 'y']] = self._fruchterman_reingold(
+            A=net.flow_matrix.applymap(lambda x: int(x > 0.0)),
+            dim=2,
+            k=k_,
+            pos=self.get_node_pos_as_array(),
+            iterations=50,
+            hold_dim=1,
+            HardSpheres=True,
+            if_only_attraction=False)
+ 
+    def assignXandUpdate(self, yrow, grouped_):
+        '''
+        assign the next free x from the queue of available values in pos_df
+        '''
+        return grouped_.loc[yrow['TLbin'], 'xs'].pop(0)
 
-        self.nodes[['x', 'y']] = self._fruchterman_reingold(net.flow_matrix.applymap(
-               is_positive), 2, HardSpheres=False, if_only_attraction=True, k=k_, hold_dim=1, pos=self.get_node_pos_as_array(), iterations=20)
-        self.nodes[['x', 'y']] = self._fruchterman_reingold(net.flow_matrix.applymap(
-               is_positive), 2, HardSpheres=True, if_only_attraction=False, k=k_, hold_dim=1, pos=self.get_node_pos_as_array(), iterations=50)
-        #print('Number of edge intersections: '+str(self.calc_num_of_crossed_edges(net)))
-
-    def assignXandUpdate(self, yrow, grouped_):  # assign the next free x from the queue of available values in pos_df
-        a = grouped_.loc[yrow['TLbin'], 'xs'].pop(0)
-        return(a)
-
-    # assign the next free x from the queue of available values in pos_df
     def randomly_assign_X_and_Update(self, yrow, grouped_):
-        return(grouped_.loc[yrow['TLbin'], 'xs'].pop(random.choice(range(len(grouped_.loc[yrow['TLbin'], 'xs'])))))
+        '''
+        assign the next free x from the queue of available values in pos_df
+        '''
+        return grouped_.loc[yrow['TLbin'], 'xs'].pop(random.choice(range(len(grouped_.loc[yrow['TLbin'], 'xs']))))
 
     def outflows_to_living(self, net):  # node's system outflows to living
         living = net.node_df[net.node_df['IsAlive']]
@@ -79,27 +95,37 @@ class netImage(object):
     def get_grouped_prop(self, yrow, grouped_, prop):  # get the width of trophic layer for this node
         return(grouped_.loc[yrow['TLbin'], prop])
 
-    def assign_x_rank_in_tl_layer(self, df):  # check if within TL layer the node is odd or even
-       old_TLbin = df.iloc[0].loc['TLbin']  # 'TLbin' is the common group identifier
-       i = 0
-       x_rank = pd.Series(dtype=int)
-       for index, row in df.iterrows():
-           if row['TLbin'] == old_TLbin:
-               x_rank = x_rank.append(pd.Series([i+1]))
-               i += 1
-           else:
-               x_rank = x_rank.append(pd.Series([1]))
-               i = 1
-               old_TLbin = row['TLbin']
-       return(x_rank)
+    def assign_x_rank_in_tl_layer(self, df):
+        '''
+        check if within TL layer the node is odd or even
+        '''
+        # 'TLbin' is the common group identifier
+        old_TLbin = df.iloc[0].loc['TLbin']
+        i = 0
+        x_rank = pd.Series(dtype=int)
+        for index, row in df.iterrows():
+            if row['TLbin'] == old_TLbin:
+                x_rank = x_rank.append(pd.Series([i+1]))
+                i += 1
+            else:
+                x_rank = x_rank.append(pd.Series([1]))
+                i = 1
+                old_TLbin = row['TLbin']
+        return x_rank
 
-    def calc_node_layer_width_around_node(self, this_tl, df):  # how many nodes have TL +- 0.5
-        neigh = df[np.abs(df['TL']-this_tl) < 0.25]
-        return(len(neigh))
+    def calc_node_layer_width_around_node(self, this_tl, df):
+        '''
+        how many nodes have TL +- 0.5
+        '''
+        return len(df[np.abs(df['TL']-this_tl) < 0.25])
 
-    def calc_tl_layer(self, n):  # calculate how many trophic levels should be in one horizontal band
-        #0.8 worked for n=20, 0.4 for n=100
-        return(0.2 + 10/n)
+    def calc_tl_layer(self, n):
+        '''
+        calculate how many trophic levels should be in one horizontal band
+
+        0.8 worked for n=20, 0.4 for n=100
+        '''
+        return 0.2 + 10 / n
 
     def aggregate_in_TL_layers(self, pos_df):
         grouped = pos_df.groupby('TLbin').agg('count')
@@ -115,31 +141,34 @@ class netImage(object):
 
     def calc_node_attributes(self, net):
         tl_layer = self.calc_tl_layer(net.n)
-        #node positions are based upon node properties, here on trophic levels
-        pos_df = pd.DataFrame({'TL': fw.calculate_trophic_levels(
-            net), 'bio': net.node_df["Biomass"], 'name': net.node_df.index})  # dataframe for positions
-        #we aggregate trophic levels within integers in order to evenly distribute them horizontally
-        tl_strip_divisions = list(map(lambda x: tl_layer*x, list(range(1, int(14/tl_layer)))))
-        pos_df['TL_bin_end'] = pd.cut(x=pos_df['TL'].apply(
-            np.float), bins=tl_strip_divisions)  # bins include the rightmost edge
+
+        # node positions are based upon node properties, here on trophic levels
+        pos_df = net.node_df[['TrophicLevel', 'Biomass']].reset_index()
+        pos_df.columns = ['name', 'TL', 'bio']
+
+        # we aggregate trophic levels within integers in order to evenly distribute them horizontally
+        tl_strip_divisions = list(map(lambda x: tl_layer * x, list(range(1, int(14 / tl_layer)))))
+
+        # bins include the rightmost edge
+        pos_df['TL_bin_end'] = pd.cut(x=pos_df['TL'].apply(np.float), bins=tl_strip_divisions)
         pos_df['TLbin'] = pos_df['TL_bin_end'].apply(lambda x: x.mid)
         pos_df['out_to_living'] = self.outflows_to_living(net)
         pos_df['y'] = np.interp(pos_df['TL'], (pos_df['TL'].min(), pos_df['TL'].max()), (5, 95))
         pos_df['width'] = pos_df['TL'].apply(self.calc_node_layer_width_around_node, df=pos_df)
+
         # select horizontal node positions with minimal number of intersections between flows
         pos_df = self.minimal_intersections(net, pos_df)
-        #pos_df_fin['x']=50+np.asarray(np.random.uniform(-1,1,len(pos_df))) #try all starting from the middle pos_df.apply(lambda x: self.assignXandUpdate(x, grouped_=grouped), axis='columns' )
-        #but to avoid flows passing over nodes en route to others due to aligned points
-        #we move the nodes at random a bit
-        distortX = uniform(-8, 8, len(pos_df))
-        pos_df['x'] = pos_df['x']+distortX
 
-        return(pos_df)
+        # we move the nodes at random a bit
+        pos_df['x'] = pos_df['x'] + uniform(-8, 8, len(pos_df))
+        return pos_df
 
     def minimal_intersections(self, net, pos_df):
-        #given nodes grouped within layers of trophic levels the function
-        #first generates a random but regular node placement in x variable, then
-        #computes the number of intersections for each and chooses the one with the smallest
+        '''
+        given nodes grouped within layers of trophic levels the function
+        first generates a random but regular node placement in x variable, then
+        computes the number of intersections for each and chooses the one with the smallest
+        '''
         setups = pd.DataFrame()
         for it in range(20):
             setup = pd.Series()
@@ -157,54 +186,37 @@ class netImage(object):
     def get_particle_numbers(self, net, withDetritus, min_part_num=2, map_fun=np.log10, max_part=1000):
         #  min_part_num: fixed number of particles for a minimal flow
 
-        if not withDetritus:
-              flows = net.get_all_to_living_flows()
-        else:
-               flows = net.get_flow_matrix(boundary=False)
+        flows = net.get_flow_matrix(boundary=False) if withDetritus else net.get_all_to_living_flows()
+
         # the minimal flow will correspond to a fixed number of particles
         minFlow = flows[flows > 0].min().min()
+
         # the maximal flow will correspond to the maximum number of particles we can handle
         maxFlow = flows[flows > 0].max().max()
 
-        # calculate the number of particles so that they are scaled (e.g. logarithmically or with square root)
         def calcPartNum(flow, minFlow_=minFlow, maxFlow=maxFlow, min_part_num_=min_part_num):
-            if flow == 0.0:
-                 return 0.0
-            return(int(squeeze_map(flow, minFlow_, maxFlow, map_fun, min_part_num_, max_part)))
-        return([flows.applymap(calcPartNum), net.node_df.Import.apply(calcPartNum), (net.node_df.Export+net.node_df.Respiration).apply(calcPartNum)])
+            '''
+            calculate the number of particles so that they are scaled
+            (e.g. logarithmically or with square root)
+            '''
+            return 0.0 if flow == 0.0 else int(
+                squeeze_map(flow, minFlow_, maxFlow, map_fun, min_part_num_, max_part))
 
-    def get_xs(self):  # x positions of nodes
-        return(self.nodes['x'])
+        return [flows.applymap(calcPartNum),
+                net.node_df.Import.apply(calcPartNum),
+                (net.node_df.Export + net.node_df.Respiration).apply(calcPartNum)]
 
-    def get_ys(self):  # y positions of nodes
-        return(self.nodes['y'])
+    def get_node_pos_as_array(self):
+        '''
+        returns node positions as array
+        '''
+        return self.nodes[['x', 'y']].values.tolist()
 
-    def set_colors(self, color_series):
-        self.nodes['color'] = color_series
-
-    def get_node_pos_as_dict(self):  # returns node positions as dict {'node 1':(x1,y1),...}
-        d = {}
-
-        def get_row_pos_dict(row):
-            return({row.name: (row['x'], row['y'])})
-        for ind in self.nodes.index:
-            d.update(get_row_pos_dict(self.nodes.loc[ind]))
-        return(d)
-
-    def get_node_pos_as_array(self):  # returns node positions as array from dict
-        i = 0
-        pos_arr = np.empty([len(self.nodes), 2])
-        for key, item in self.get_node_pos_as_dict().items():
-            pos_arr[i] = np.asarray(item)
-            i += 1
-        return(pos_arr)
-
-
-#following by Marscher, adapted from NetworkX pyemma/plots/_ext/fruchterman_reingold.py  https://github.com/markovmodel/PyEMMA/blob/58825588431020d7e2a2ea57a941abc86647fc0e/pyemma/plots/_ext/fruchterman_reingold.py
-
-
+    # following by Marscher, adapted from NetworkX pyemma/plots/_ext/fruchterman_reingold.py
+    # https://github.com/markovmodel/PyEMMA/blob/58825588431020d7e2a2ea57a941abc86647fc0e/pyemma/plots/_ext/fruchterman_reingold.py
     def _fruchterman_reingold(self, A, dim=2, k=None, pos=None, fixed=None,
-                              iterations=100, hold_dim=None, min_dist=0.01, HardSpheres=True, if_only_attraction=False):
+                              iterations=100, hold_dim=None, min_dist=0.01,
+                              HardSpheres=True, if_only_attraction=False):
         # Position nodes in adjacency matrix A using Fruchterman-Reingold
         # Entry point for NetworkX graph is fruchterman_reingold_layout()
         try:
@@ -287,7 +299,9 @@ class netImage(object):
         return pos
 
     def _rescale_layout(self, pos, borders):
-        # rescale to (origin_,scale) in all axes
+        '''
+        rescale to (origin_,scale) in all axes
+        '''
 
         # shift origin to (origin_,origin_)
         lim = np.zeros(pos.shape[1])  # max coordinate for all axes
@@ -300,60 +314,65 @@ class netImage(object):
         return pos
 
     def calc_num_of_crossed_edges(self, net, positions):
-        #returns the approximate number of crossing between edges given the positions of their ends
-        #approximate in order not to solve line equation -> but this does not have to prolong evaluation time greatly
-        links = self.get_all_link_coords(net, positions)
-        links = links.dropna()
+        '''
+        returns the approximate number of crossing between edges given the positions of their ends
+        approximate in order not to solve line equation -> but this does
+        not have to prolong evaluation time greatly
+        '''
 
-        pairs = pd.DataFrame(itertools.combinations(links, 2))
-        pairs['crossing'] = pairs.apply(doIntersect, axis='columns')
-        return(pairs['crossing'].sum())
+        pairs = pd.DataFrame(itertools.combinations(self.get_all_link_coords(net, positions).dropna(), 2))
+        return pairs.apply(doIntersect, axis='columns').sum()
 
     def get_all_link_coords(self, net, positions):
-        #returns coordinates of a link as a list of ((x1,y1),(x2,y2))
+        '''
+        returns coordinates of a link as a list of ((x1,y1),(x2,y2))
+        '''
         living = net.node_df[net.node_df['IsAlive']]
         flows_to_living = net.flow_matrix.loc[:, living.index]
         edges = pd.DataFrame(flows_to_living.stack())  # Series of edges
 
         def get_link_coords(row):
-            #returns coordinates of a link as ((x1,y1),(x2,y2))
+            '''
+            returns coordinates of a link as ((x1,y1),(x2,y2))
+            '''
             if row[0] == 0.0:
-                 return(None)
+                return
+
             (node_1, node_2) = row.name
             if node_1 == node_2:
-                 return(None)
-            return(tuple([tuple(positions.loc[node_1, ['x', 'y']]), tuple(positions.loc[node_2, ['x', 'y']])]))
-        return(edges.apply(get_link_coords, axis='columns'))
+                return
+            return tuple([tuple(positions.loc[node_1, ['x', 'y']]), tuple(positions.loc[node_2, ['x', 'y']])])
+        return edges.apply(get_link_coords, axis='columns')
 
     def get_high_low(self, points):
-        #get the point that is higher
-        if points[0][1] > points[1][1]:
-              return((points[0], points[1]))
-        else:
-               return((points[1], points[0]))
+        # get the point that is higher
+        return (points[0], points[1]) if points[0][1] > points[1][1] else (points[1], points[0])
 
-    #a heuristic solution, placing an upper bound on whether they cross
+    # a heuristic solution, placing an upper bound on whether they cross
     def do_they_cross(self, pair):
         a = pair[0]
         b = pair[1]
         if len(a) < 2 or len(b) < 2:
             print(a)
             print(b)
-            return(False)  # strange
+            return False  # strange
+        # we do not count self-loops
         if any([a[0] == b[0], a[1] == b[0], a[0] == b[1], a[1] == b[1]]):
-              return(False)  # we do not count self-loops
+            return False
         (high_a, low_a) = self.get_high_low(a)
         (high_b, low_b) = self.get_high_low(b)
+        # they are separated in one of the variables
         if max([x[1] for x in a]) <= min([x[1] for x in b]) or max([x[0] for x in a]) <= min([x[0] for x in b]) or max([x[1] for x in b]) <= min([x[1] for x in a]) or max([x[0] for x in b]) <= min([x[0] for x in a]):
-            return(False)  # they are separated in one of the variables
+            return False
         if len(high_a) < 2 or len(high_b) < 2 or len(low_a) < 2 or len(low_b) < 2:
             print(a)
             print(b)
-            return(False)
+            return False
 
-        # if the ends are in different order they most likely cross - usually the vertical length component is the same (==1, it is one trophic level)
+        # if the ends are in different order they most likely cross -
+        # usually the vertical length component is the same (==1, it is one trophic level)
         if np.sign((high_a[0]-high_b[0])*(low_a[0]-low_b[0])):
-            return(True)
+            return True
 
 
 def onSegment(p, q, r):
@@ -374,23 +393,19 @@ def orientation(p, q, r):
     # for details of below formula.
 
     val = (float(q[1] - p[1]) * (r[0] - q[0])) - (float(q[0] - p[0]) * (r[1] - q[1]))
-    if (val > 0):
-
+    if val > 0:
         # Clockwise orientation
         return 1
     elif (val < 0):
-
         # Counterclockwise orientation
         return 2
     else:
-
         # Colinear orientation
         return 0
 
 # The main function that returns true if
-# the line segment 'p1q1' and 'p2q2' intersect. From https://www.geeksforgeeks.org/check-if-two-given-line-segments-intersect/
-
-
+# the line segment 'p1q1' and 'p2q2' intersect. 
+# From https://www.geeksforgeeks.org/check-if-two-given-line-segments-intersect/
 def doIntersect(pair):
     ((p1, p2), (q1,q2)) = pair
     # Find the 4 orientations required for

@@ -15,13 +15,21 @@ from numpy.random import uniform
 
 from foodwebviz.utils import squeeze_map
 
-#here some global design choices
+# here some global design choices
 
-f = 60  # FPS
-interval = 1000/f  # time between frames in ms
-lengthT = 1  # how long should the animation be in s
-frameNumber = f*lengthT  # number of frames in ms
-v =0.1# 1/(5*lengthT)  # global velocity along the lines so that it loops back on itself
+FPS = 60
+
+# time between frames in ms
+INTERVAL_BETWEEN_FRAMES = 1000 / FPS
+
+# how long should the animation be in s
+ANIMATION_LEGHT = 1
+
+# number of frames in ms
+NUMBER_OF_FRAMES = FPS*ANIMATION_LEGHT
+
+# global velocity along the lines so that it loops back on itself
+VELOCITY = 0.1  # 1/(5*ANIMATION_LEGHT)
 
 
 def stretch(x, l):
@@ -38,13 +46,14 @@ def particles_in_one_flow(nOne_, x1, x2, y1, y2, start_node, max_part, map_fun):
     # we want the nOne to represent flow density, so we need to normalize to path length
     nOne = int(nOne_*np.sqrt(lx**2+ly**2)/20)
     s = uniform(0, 1, nOne)
-    #we spread the particles randomly in direction perpendicular to the line
-    #making larger flows broader
-    #lxd = np.interp(nOne_, [0, max_part], [0, 1.5])  # max(lx/20,3)
+
+    # we spread the particles randomly in direction perpendicular to the line
+    # making larger flows broader
+    # lxd = np.interp(nOne_, [0, max_part], [0, 1.5])  # max(lx/20,3)
     width = squeeze_map(nOne_, 1, max_part, map_fun, 0.05, 3)
-    
+
     distortX = uniform(-width/2, width/2, nOne) # spread them randomly
-    distortY = uniform(-width/2, width/2, nOne)   
+    distortY = uniform(-width/2, width/2, nOne)
     x1_ = stretch(x1, nOne)
     y1_ = stretch(y1, nOne)
     if ly != 0.0:
@@ -54,16 +63,14 @@ def particles_in_one_flow(nOne_, x1, x2, y1, y2, start_node, max_part, map_fun):
     # x1_=x1
     # y1_=y1
     d = {'s': s, 'x': x1_+s*lx, 'y': y1_+s*ly, 'x1': x1_, 'y1': y1_, 'lx': lx, 'ly': ly, 'start': start_node}
-    return (pd.DataFrame(d))
-
-# now initialize particles
+    return pd.DataFrame(d)
 
 
 def init_particles(netIm, if_imports, if_exports, max_part, map_fun):
     # given the network image with node positions
     # and the number of particles flowing between them, initialize particles
-    xs = netIm.get_xs()
-    ys = netIm.get_ys()
+    xs = netIm.nodes.x
+    ys = netIm.nodes.y
     # number of particles along a system flow
     [partNumber_sys_flows, partNumber_imports, partNumber_exports] = netIm.particle_numbers
 
@@ -112,14 +119,14 @@ def get_color_for_tl(df, y, max_luminance, cmap):
 
 # specify colors using coordinates in columns x and y of the dataframe df
 def assign_colors(particles, netIm, max_luminance, cmap):
-    netIm.set_colors(get_color_for_tl(netIm.nodes, 'y', max_luminance, cmap=cmap))
+    netIm.nodes['color'] = get_color_for_tl(netIm.nodes, 'y', max_luminance, cmap=cmap)
     particles['color'] = particles.apply(lambda x: netIm.nodes.loc[x['start'], 'color'], axis='columns')
     return(particles)
 
 
-#RULES TO UPDATE FRAMES
+# RULES TO UPDATE FRAMES
 def getVelocity(row, lx, ly):  # get axial velocity along lx given the direction (lx,ly)
-    return(v*row[lx]/np.sqrt(row[lx]**2+row[ly]**2))
+    return(VELOCITY*row[lx]/np.sqrt(row[lx]**2+row[ly]**2))
 
 
 # how the position along the edge s in [0,1] is translated into alpha (transparency) value
@@ -139,20 +146,20 @@ def update_transparency(particles, overall_alpha, max_width):
 def accelerate_imports(row):  # imports have shorter way to go, we make them go faster to be noticed
     #unless they are at higher trophic levels
     if row['lx'] == 0 and np.abs(row['ly']) < 20:
-        return(4*v)
+        return(4*VELOCITY)
     else:
         return(0.0)
 
 
 def move(particles, alpha_, t, max_width):
-    #we move a particle along its line by updating 's'
-    #vx=particles.apply(getVelocity,axis='columns',lx='lx',ly='ly')
-    #vy=particles.apply(getVelocity,axis='columns',lx='ly',ly='lx')
+    # we move a particle along its line by updating 's'
+    # vx=particles.apply(getVelocity,axis='columns',lx='lx',ly='ly')
+    # vy=particles.apply(getVelocity,axis='columns',lx='ly',ly='lx')
 
     # updating s and cycling within [0,1] Old case of constant progress over line
-    particles.loc[:, 's'] = (particles.loc[:, 's']+v*t +
+    particles.loc[:, 's'] = (particles.loc[:, 's']+VELOCITY*t +
                              particles.apply(accelerate_imports, axis='columns')*t) % 1
-    #which we save translated to 'x' and 'y'
+    # which we save translated to 'x' and 'y'
 
     # np.mod(particles.loc[:,'x']-particles.loc[:,'x1'] + vx*t , particles.loc[:,'lx'])
     particles.loc[:, 'x'] = particles.loc[:, 'x1'] + particles.loc[:, 'lx']*particles.loc[:, 's']
@@ -168,9 +175,7 @@ def get_color_with_transparency(particle_row):  # set transparency within RGBA c
     new_color[3] = particle_row['alpha']
     return(tuple(new_color))
 
-#Adding vertices
-
-
+# Adding vertices
 def abbrev_word(s):
     if len(s) > 3:
         return(s[:3]+'.')
@@ -231,7 +236,7 @@ def add_trophic_level_legend(ax, pos_df, font_size):  # adds a legend of trophic
         i += 1
 
 
-def layer(frame, particles,  netIm, alpha_, t=interval, max_width=8, particle_size=2):
+def layer(frame, particles,  netIm, alpha_, t=INTERVAL_BETWEEN_FRAMES, max_width=8, particle_size=2):
     # print('Frame with alpha '+str(alpha_)+' step '+str(t))
     move(particles, alpha_, t, max_width)
     # make particles fade except when around their target or start nodes
