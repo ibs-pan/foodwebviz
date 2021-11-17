@@ -6,13 +6,10 @@ The master functions for animation.
 """
 import numpy as np
 import matplotlib.pyplot as plt
-import seaborn as sns
 from matplotlib import animation
 
-import foodwebviz as fw
-
 import foodwebviz.netImage as ni
-from foodwebviz.visuals import layer, add_vertices, init_particles, assign_colors, fading_formula
+from foodwebviz.visuals import layer, add_vertices, init_particles, assign_colors
 
 
 __all__ = [
@@ -21,16 +18,18 @@ __all__ = [
 
 
 def adapt_dpi(node_nr):  # adapt the resolution to the number of nodes
-    return(100+1.75*node_nr)
+    return 100 + 1.75 * node_nr
 
 
 def adapt_particle_size(particles_nr, node_nr):  # adapt size of flow particles
-    return(max(14000/particles_nr, 0.5))
+    return max(14000 / particles_nr, 0.5)
 
-def adapt_node_and_font_size(n, maxwidth):  # adapt the minimal node size to the number of nodes
-    return((15/maxwidth, max(10, 60/maxwidth)))
-    #0.5 for 20 was ok
-    #0.05 for 100?
+
+def adapt_node_and_font_size(n, maxwidth):
+    '''
+    adapt the minimal node size to the number of nodes
+    '''
+    return (15 / maxwidth, max(10, 60 / maxwidth))
 
 
 def animate(filename, func, frames, interval, fig=None, figsize=(6.5, 6.5), fps=None, dpi=None):
@@ -69,12 +68,8 @@ def animate(filename, func, frames, interval, fig=None, figsize=(6.5, 6.5), fps=
     if fig is None:
         fig = plt.figure(figsize=figsize)
 
-    #fig.patch.set_visible(False)
-
     forward.first = True
     anim = animation.FuncAnimation(fig, forward, frames=frames, interval=interval)
-
-    #plt.show()
     anim.save(filename, writer='imagemagick', fps=fps, dpi=dpi)
 
 
@@ -86,7 +81,7 @@ gif_file_out = 'Example.gif'
 def animate_foodweb(foodweb, gif_file_out, fps=10, anim_len=1, trails=1,
                     min_node_radius=0.5, max_node_radius=10, min_part_num=1,
                     max_part_num=20, map_fun=np.sqrt, if_imports=True, if_exports=False,
-                    cmap=plt.cm.get_cmap('viridis'), max_luminance=0.85, 
+                    cmap=plt.cm.get_cmap('viridis'), max_luminance=0.85,
                     particle_size = 8):
     '''foodweb_animation creates a GIF animation saved as gif_file_out based on the food web
         provided as a SCOR file scor_file_in. The canvas size in units relevant
@@ -113,7 +108,8 @@ def animate_foodweb(foodweb, gif_file_out, fps=10, anim_len=1, trails=1,
             the map_fun is used as g(x) in mapping the interval [a,b] to a known interval [A, B]:
             f(x)= A + (B-A)g(x)/g(b) where g(a)=0
         cmap :
-            a continuous colour map (e.g. seaborn.color_palette("cubehelix", as_cmap=True), matplotlib.pyplot.cm.get_cmap('viridis'))
+            a continuous colour map
+            (e.g. seaborn.color_palette("cubehelix", as_cmap=True), matplotlib.pyplot.cm.get_cmap('viridis'))
         max_luminance : float
             cut-off for the color range in cmap, in [0,1]: no cut-off is equivalent to max_luminance=1
             usually, the highest values in a cmap range are very bright and hardly visible
@@ -124,8 +120,7 @@ def animate_foodweb(foodweb, gif_file_out, fps=10, anim_len=1, trails=1,
         plt.cla()
         layer(frame, particles, netIm, 1, t=interval+shadeStep*trails,
               particle_size=particle_size)  # print the present positions of the particles
-        #add vertices
-        
+
         fig = plt.gcf()
         ax = fig.gca()
         add_vertices(ax, netIm.nodes, r_min=min_node_radius,
@@ -133,9 +128,9 @@ def animate_foodweb(foodweb, gif_file_out, fps=10, anim_len=1, trails=1,
         T = 0
         for i in range(trails):  # shadow: alpha decreasing from 1 to the lowest specified for flows
             shadow_alpha = 1-0.5*(i+1)/trails
-            layer(frame, particles, netIm, shadow_alpha, t=-shadeStep, particle_size=shadow_alpha*particle_size)
+            layer(frame, particles, netIm, shadow_alpha,
+                  t=-shadeStep, particle_size=shadow_alpha*particle_size)
             T += shadeStep
-        #layer(frame, particles, netIm, 0.8, t=T+shadeStep)  # the final position
 
     # time interval between frames
     interval = 0.3/fps
@@ -146,19 +141,22 @@ def animate_foodweb(foodweb, gif_file_out, fps=10, anim_len=1, trails=1,
     # how long should the animation be in s
     frameNumber = fps*anim_len  # number of frames
 
-    #create a static graph representation of the food web and map flows and biomass to particle numbers and node sizes    
-    netIm = ni.netImage(foodweb, False, k_=80, min_part_num=min_part_num, map_fun=map_fun, max_part=max_part_num)
-    
+    # create a static graph representation of the food web
+    # and map flows and biomass to particle numbers and node sizes
+    netIm = ni.netImage(foodweb, False, k_=80,
+                        min_part_num=min_part_num,
+                        map_fun=map_fun,
+                        max_part=max_part_num)
+
     particles = init_particles(netIm, if_imports, if_exports, max_part=max_part_num, map_fun=map_fun)
 
-    
     particles = assign_colors(particles, netIm,
-                              max_luminance=max_luminance, cmap=cmap)
+                              max_luminance=max_luminance,
+                              cmap=cmap)
     (max_node_radius, font_size) = adapt_node_and_font_size(len(netIm.nodes), np.max(netIm.nodes['width']))
     max_width = np.max(netIm.nodes['width'])
     (max_node_radius, font_size) = adapt_node_and_font_size(len(netIm.nodes), max_width)
     dpi = adapt_dpi(len(netIm.nodes))
-    #particle_size = adapt_particle_size(len(particles), len(netIm.nodes))
 
     animate(gif_file_out,
             func=panimate,

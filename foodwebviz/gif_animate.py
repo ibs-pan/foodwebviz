@@ -9,6 +9,7 @@ Created on Sun Sep 14 12:41:24 2014
 from matplotlib import animation
 import matplotlib.pyplot as plt
 
+
 def animate(filename, func, frames, interval, fig=None, figsize=(6.5, 6.5), fps=None, dpi=None):
     """ Creates an animated GIF of a matplotlib.
 
@@ -33,8 +34,6 @@ def animate(filename, func, frames, interval, fig=None, figsize=(6.5, 6.5), fps=
        size of the figure in inches. Defaults to 6.5" by 6.5"
     """
 
-
-
     def forward(frame):
         # I don't know if it is a bug or what, but FuncAnimation calls twice
         # with the first frame number. That breaks any animation that uses
@@ -46,9 +45,7 @@ def animate(filename, func, frames, interval, fig=None, figsize=(6.5, 6.5), fps=
 
     if fig is None:
         fig = plt.figure(figsize=figsize)
-    
-    #fig.patch.set_visible(False)
-    
+
     forward.first = True
     anim = animation.FuncAnimation(fig, forward, frames=frames, interval=interval)
     anim.save(filename, writer='imagemagick', fps=fps, dpi=dpi)
