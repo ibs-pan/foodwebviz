@@ -25,7 +25,7 @@ Make sure you have Python installed (we recommend Anaconda which comes with a wi
 3. Manually download ``foodwebviz`` package from [GitHub](https://github.com/ibs-pan/foodwebviz) and run the following terminal command from the
 top-level source directory (on Windows use e.g. Anaconda Prompt):
 
-    $ pip install .
+    `$ pip install .`
 
 
 Tutorial
