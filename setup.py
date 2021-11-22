@@ -62,7 +62,7 @@ def parse_requirements_file(filename):
 
 install_requires = parse_requirements_file("requirements.txt")
 
-with open("README.rst", "r") as fh:
+with open("README.md", "r") as fh:
     long_description = fh.read()
 
 if __name__ == "__main__":
