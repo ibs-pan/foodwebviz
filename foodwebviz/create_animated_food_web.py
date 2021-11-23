@@ -8,7 +8,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib import animation
 
-import foodwebviz.netImage as ni
+from foodwebviz.animation.network_image import NetworkImage
 from foodwebviz.visuals import layer, add_vertices, init_particles, assign_colors
 
 
@@ -143,10 +143,10 @@ def animate_foodweb(foodweb, gif_file_out, fps=10, anim_len=1, trails=1,
 
     # create a static graph representation of the food web
     # and map flows and biomass to particle numbers and node sizes
-    netIm = ni.netImage(foodweb, False, k_=80,
-                        min_part_num=min_part_num,
-                        map_fun=map_fun,
-                        max_part=max_part_num)
+    netIm = NetworkImage(foodweb, False, k_=80,
+                         min_part_num=min_part_num,
+                         map_fun=map_fun,
+                         max_part=max_part_num)
 
     particles = init_particles(netIm, if_imports, if_exports, max_part=max_part_num, map_fun=map_fun)
 
