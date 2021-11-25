@@ -99,7 +99,7 @@ class NetworkImage(object):
         trophic_levels_cnt = 0.2 + 10 / net.n
 
         # node positions are based upon node properties, here on trophic levels
-        pos_df = net.node_df[['TrophicLevel', 'Biomass']].copy()
+        pos_df = net.node_df[['TrophicLevel', 'Biomass']].reset_index().set_index('Names', drop=False).copy()
 
         # we aggregate trophic levels within integers in order to evenly distribute them horizontally
         trophic_levels_bins = list(map(
@@ -156,6 +156,8 @@ class NetworkImage(object):
         '''
         min_part_num: fixed number of particles for a minimal flow
         '''
+
+        # tu jednak trzeba zerować, a nie usuwać 
         flows = net.get_flow_matrix(boundary=False, to_alive_only=~with_detritus)
 
         # the minimal flow will correspond to a fixed number of particles
@@ -164,7 +166,7 @@ class NetworkImage(object):
         max_flow = flows.values[flows.values > 0].max()
 
         calc_particle_number = lambda x: int(
-            squeeze_map(x, min_flow, max_flow, map_fun, min_part_num, max_part)) if x != 0.0 else 0.0
+            squeeze_map(x, min_flow, max_flow, map_fun, min_part_num, max_part)) if x != 0.0 else 0
 
         return [flows.applymap(calc_particle_number),
                 net.node_df.Import.apply(calc_particle_number),

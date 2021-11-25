@@ -50,7 +50,8 @@ with open("foodwebviz/__init__.py") as fid:
             break
 
 packages = [
-    "foodwebviz"
+    "foodwebviz",
+    "foodwebviz.animation"
 ]
 
 

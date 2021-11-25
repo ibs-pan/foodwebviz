@@ -135,7 +135,8 @@ class FoodWeb(object):
             If True, boundary flows will be added to the graph.
             Boundary flows are: Import, Export, and Repiration.
         to_alive_only : bool, optional (default=False)
-            If True, flow_matrix will exclude columns of nodes which are not alive
+            If True, flow_matrix will include only flows to alive nodes
+            (flows to not alive nodes will be 0)
 
         Returns
         -------
@@ -146,7 +147,7 @@ class FoodWeb(object):
         flow_matrix = self.flow_matrix.copy()
 
         if to_alive_only:
-            flow_matrix = flow_matrix[self.node_df.IsAlive]
+            flow_matrix.transpose()[~self.node_df['IsAlive']] = 0.0
 
         if not boundary:
             return flow_matrix

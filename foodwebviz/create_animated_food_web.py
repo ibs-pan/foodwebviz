@@ -9,7 +9,7 @@ import matplotlib.pyplot as plt
 from matplotlib import animation
 
 from foodwebviz.animation.network_image import NetworkImage
-from foodwebviz.visuals import layer, add_vertices, init_particles, assign_colors
+from foodwebviz.animation import animation_utils
 
 
 __all__ = [
@@ -17,22 +17,7 @@ __all__ = [
 ]
 
 
-def adapt_dpi(node_nr):  # adapt the resolution to the number of nodes
-    return 100 + 1.75 * node_nr
-
-
-def adapt_particle_size(particles_nr, node_nr):  # adapt size of flow particles
-    return max(14000 / particles_nr, 0.5)
-
-
-def adapt_node_and_font_size(n, maxwidth):
-    '''
-    adapt the minimal node size to the number of nodes
-    '''
-    return (15 / maxwidth, max(10, 60 / maxwidth))
-
-
-def animate(filename, func, frames, interval, fig=None, figsize=(6.5, 6.5), fps=None, dpi=None):
+def _run_animation(filename, func, frames, interval, fig=None, figsize=(6.5, 6.5), fps=None, dpi=None):
     """ Creates an animated GIF of a matplotlib.
 
     Parameters
@@ -73,16 +58,11 @@ def animate(filename, func, frames, interval, fig=None, figsize=(6.5, 6.5), fps=
     anim.save(filename, writer='imagemagick', fps=fps, dpi=dpi)
 
 
-# A food web example
-scor_file_in = 'Alaska_Prince_William_Sound.scor'  # 'atlss_cypress_wet.dat'
-gif_file_out = 'Example.gif'
-
-
 def animate_foodweb(foodweb, gif_file_out, fps=10, anim_len=1, trails=1,
-                    min_node_radius=0.5, max_node_radius=10, min_part_num=1,
-                    max_part_num=20, map_fun=np.sqrt, if_imports=True, if_exports=False,
+                    min_node_radius=0.5, min_part_num=1,
+                    max_part_num=20, map_fun=np.sqrt, include_imports=True, include_exports=False,
                     cmap=plt.cm.get_cmap('viridis'), max_luminance=0.85,
-                    particle_size = 8):
+                    particle_size=8):
     '''foodweb_animation creates a GIF animation saved as gif_file_out based on the food web
         provided as a SCOR file scor_file_in. The canvas size in units relevant
         to further parameters is [0,100]x[0,100].
@@ -94,8 +74,6 @@ def animate_foodweb(foodweb, gif_file_out, fps=10, anim_len=1, trails=1,
             it significantly impacts computation length
         min_node_radius : float
             the radius of the smallest node on canvas [0,100]x[0,100]
-        max_node_radius : float
-            the radius of the largest node on canvas [0,100]x[0,100]
         min_part_num : int
             the number of particles representing the smallest flow
         max_part_num : int
@@ -116,56 +94,50 @@ def animate_foodweb(foodweb, gif_file_out, fps=10, anim_len=1, trails=1,
         particle_size: float
             size of the flow particles
     '''
-    def panimate(frame):
+    def animate_frame(frame):
         plt.cla()
-        layer(frame, particles, netIm, 1, t=interval+shadeStep*trails,
-              particle_size=particle_size)  # print the present positions of the particles
+        # print the present positions of the particles
+        animation_utils.create_layer(frame, particles, network_image, 1, t=interval + shade_step * trails,
+                                     particle_size=particle_size)
 
         fig = plt.gcf()
         ax = fig.gca()
-        add_vertices(ax, netIm.nodes, r_min=min_node_radius,
-                     r_max=max_node_radius, font_size=font_size, alpha_=0.95)
+        animation_utils.add_vertices(ax, network_image.nodes, r_min=min_node_radius,
+                                     r_max=max_node_radius, font_size=font_size, alpha=0.95)
         T = 0
         for i in range(trails):  # shadow: alpha decreasing from 1 to the lowest specified for flows
             shadow_alpha = 1-0.5*(i+1)/trails
-            layer(frame, particles, netIm, shadow_alpha,
-                  t=-shadeStep, particle_size=shadow_alpha*particle_size)
-            T += shadeStep
+            animation_utils.create_layer(frame, particles, network_image, shadow_alpha,
+                                         t=-shade_step, particle_size=shadow_alpha*particle_size)
+            T += shade_step
 
     # time interval between frames
-    interval = 0.3/fps
+    interval = 0.3 / fps
 
     # what should be the distance of shades behind the actual particle position in terms of their time delay
-    shadeStep = 0.7*interval
-
-    # how long should the animation be in s
-    frameNumber = fps*anim_len  # number of frames
+    shade_step = 0.7 * interval
 
     # create a static graph representation of the food web
     # and map flows and biomass to particle numbers and node sizes
-    netIm = NetworkImage(foodweb, False, k_=80,
-                         min_part_num=min_part_num,
-                         map_fun=map_fun,
-                         max_part=max_part_num)
+    network_image = NetworkImage(foodweb, False, k_=80,
+                                 min_part_num=min_part_num,
+                                 map_fun=map_fun,
+                                 max_part=max_part_num)
 
-    particles = init_particles(netIm, if_imports, if_exports, max_part=max_part_num, map_fun=map_fun)
+    particles = animation_utils.init_particles(network_image, include_imports, include_exports,
+                                               max_part=max_part_num, map_fun=map_fun)
+    particles = animation_utils.assign_colors(particles, network_image,
+                                              max_luminance=max_luminance, cmap=cmap)
 
-    particles = assign_colors(particles, netIm,
-                              max_luminance=max_luminance,
-                              cmap=cmap)
-    (max_node_radius, font_size) = adapt_node_and_font_size(len(netIm.nodes), np.max(netIm.nodes['width']))
-    max_width = np.max(netIm.nodes['width'])
-    (max_node_radius, font_size) = adapt_node_and_font_size(len(netIm.nodes), max_width)
-    dpi = adapt_dpi(len(netIm.nodes))
+    # adapt the minimal node size to the number of nodes
+    max_width = network_image.nodes.width.max()
+    max_node_radius = 15 / max_width
+    font_size = max(10, 60 / max_width)
 
-    animate(gif_file_out,
-            func=panimate,
-            frames=frameNumber,
-            interval=interval,
-            figsize=(20, 20),
-            dpi=dpi,
-            fps=fps)
-
-#net=fw.read_from_SCOR('../examples/data/Richards_Bay_C_Summer.dat')
-#animate_foodweb(net, 'Richards_Bay_cubehelix_10.gif', anim_len=5, trails=4, min_part_num=5, max_part_num=500, cmap=sns.color_palette("cubehelix", as_cmap=True), particle_size=9) #for better quality
-#animate_foodweb(net, 'Richards_Bay_icefire.gif', anim_len=5, trails=5, min_part_num=10, max_part_num=300, cmap=sns.color_palette("icefire", as_cmap=True)) #for better quality
+    _run_animation(gif_file_out,
+                   func=animate_frame,
+                   frames=fps * anim_len,  # number of frames,
+                   interval=interval,
+                   figsize=(20, 20),
+                   dpi=100 + 1.75 * len(network_image.nodes),  # adapt the resolution to the number of nodes
+                   fps=fps)
