@@ -126,7 +126,7 @@ class FoodWeb(object):
         return (self.get_graph(boundary, mark_alive_nodes, normalization, no_flows_to_detritus)
                 .edges(data=True))
 
-    def get_flow_matrix(self, boundary=False):
+    def get_flow_matrix(self, boundary=False, to_alive_only=False):
         '''Returns the flow (adjacency) matrix.
 
         Parameters
@@ -134,6 +134,9 @@ class FoodWeb(object):
         boundary : bool, optional (default=False)
             If True, boundary flows will be added to the graph.
             Boundary flows are: Import, Export, and Repiration.
+        to_alive_only : bool, optional (default=False)
+            If True, flow_matrix will include only flows to alive nodes
+            (flows to not alive nodes will be 0)
 
         Returns
         -------
@@ -141,8 +144,13 @@ class FoodWeb(object):
             Rows/columns are species, each row/column intersection represents flow
             from ith to jth node.
         '''
+        flow_matrix = self.flow_matrix.copy()
+
+        if to_alive_only:
+            flow_matrix.transpose()[~self.node_df['IsAlive']] = 0.0
+
         if not boundary:
-            return self.flow_matrix
+            return flow_matrix
 
         flow_matrix_with_boundary = self.flow_matrix.copy()
         flow_matrix_with_boundary.loc['Import'] = self.node_df.Import.to_dict()
@@ -184,8 +192,9 @@ class FoodWeb(object):
                 {self.node_df["Respiration"]}\n
                 {self.node_df["TrophicLevel"]}\n
                 '''
-    def get_all_to_living_flows(self):  #setting flows to non-living to zero
-        # TODO delete
-        isLiving=self.node_df['IsAlive']
-        self.flow_matrix.transpose()[~isLiving] = 0.0
-        return(self.flow_matrix)
+
+    def get_outflows_to_living(self):
+        # node's system outflows to living 
+        # TODO doc
+        return self.flow_matrix[self.node_df[self.node_df.IsAlive].index].sum(axis='columns')
+
