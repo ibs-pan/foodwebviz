@@ -65,5 +65,5 @@ A BibTeX entry for LaTeX users:
 author={Łukasz Pawluczuk and Mateusz Iskrzyński},
 title={Food web visualisation: heatmap, interactive graph, animated flow network},
 year={2021},
-url={https://github.com/ibs-pan/foodwebviz}
+url={https://github.com/ibs-pan/foodwebviz }
 }
