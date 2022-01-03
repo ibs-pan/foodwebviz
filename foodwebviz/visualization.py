@@ -39,6 +39,13 @@ HEATMAP_COLORS = [
     [1.0, 'rgb(27, 15, 36 )']
 ]
 
+GRAPH_COLORS = [
+    [0.0, 'rgb(222, 232, 84)'],
+    [0.25, 'rgb( 117, 188, 36)'],
+    [0.5, 'rgb( 27, 167, 50 )'],
+    [0.75, 'rgb( 28, 125, 57 )'],
+    [1.0, 'rgb(68, 33, 110)']
+]
 
 def _get_title(food_web, limit=150):
     return food_web.title if len(food_web.title) <= limit else food_web.title[:limit] + '...'
@@ -59,7 +66,7 @@ def _get_colors(cmap):
     if cmap == 'fw_blue':
         return [x[1] for x in TROPHIC_LAYER_COLORS]
     if cmap == 'fw_green':
-        return [x[1] for x in HEATMAP_COLORS]
+        return [x[1] for x in GRAPH_COLORS]
 
     if isinstance(cmap, str):
         raise Exception(f'Pre-defined color map not found: {cmap}')
