@@ -21,14 +21,18 @@ __all__ = [
 
 decimal.getcontext().rounding = decimal.ROUND_HALF_UP
 
-TROPHIC_LAYER_COLORS = [
-    [0, 'rgb(255, 255, 255)'],
-    [0.2, 'rgb(214, 233, 255)'],
-    [0.4, 'rgb(197, 218, 251)'],
-    [0.6, 'rgb(182, 201, 247)'],
-    [0.8, 'rgb( 168, 183, 240 )'],
-    [1.0, 'rgb(  167, 167, 221 )']
-]
+TROPHIC_LAYER_COLORS = {
+    'fw_blue': [[0, 'rgb(255, 255, 255)'],
+                [0.2, 'rgb(214, 233, 255)'],
+                [0.4, 'rgb(197, 218, 251)'],
+                [0.6, 'rgb(182, 201, 247)'],
+                [0.8, 'rgb( 168, 183, 240 )'],
+                [1.0, 'rgb(  167, 167, 221 )']],
+    'fw_green': [[0.0,  'rgb(222, 232, 84)'],
+                 [0.25, 'rgb( 117, 188, 36)'],
+                 [0.5,  'rgb( 27, 167, 50 )'],
+                 [0.75, 'rgb( 28, 125, 57 )'],
+                 [1.0,  'rgb(68, 33, 110)']]}
 
 HEATMAP_COLORS = [
     [0.0, 'rgb(222, 232, 84)'],
@@ -39,13 +43,6 @@ HEATMAP_COLORS = [
     [1.0, 'rgb(27, 15, 36 )']
 ]
 
-GRAPH_COLORS = [
-    [0.0, 'rgb(222, 232, 84)'],
-    [0.25, 'rgb( 117, 188, 36)'],
-    [0.5, 'rgb( 27, 167, 50 )'],
-    [0.75, 'rgb( 28, 125, 57 )'],
-    [1.0, 'rgb(68, 33, 110)']
-]
 
 def _get_title(food_web, limit=150):
     return food_web.title if len(food_web.title) <= limit else food_web.title[:limit] + '...'
@@ -63,10 +60,9 @@ def _get_log_colorbar(z_orginal):
 
 
 def _get_colors(cmap):
-    if cmap == 'fw_blue':
-        return [x[1] for x in TROPHIC_LAYER_COLORS]
-    if cmap == 'fw_green':
-        return [x[1] for x in GRAPH_COLORS]
+    colors = TROPHIC_LAYER_COLORS.get(cmap)
+    if colors:
+        return [x[1] for x in colors]
 
     if isinstance(cmap, str):
         raise Exception(f'Pre-defined color map not found: {cmap}')
@@ -106,7 +102,7 @@ def _get_trophic_layer(graph, from_nodes, to_nodes):
         ygap=0.2,
         zmin=min(z),
         zmax=max(z) + 3,
-        colorscale=TROPHIC_LAYER_COLORS,
+        colorscale=TROPHIC_LAYER_COLORS['fw_blue'],
         name='Trophic Layer',
         hoverinfo='skip'
     )
@@ -324,6 +320,7 @@ def draw_trophic_flows_distribution(food_web, normalize=True, width=1000, height
     '''
     tf_pd = _get_trophic_flows(food_web)
     tf_pd['to'] = tf_pd['to'].astype(str)
+    tf_pd['from'] = tf_pd['from'].astype(str)
 
     if normalize:
         tf_pd['percentage'] = tf_pd['weights'] / tf_pd.groupby('from')['weights'].transform('sum')
@@ -332,19 +329,20 @@ def draw_trophic_flows_distribution(food_web, normalize=True, width=1000, height
                  y="from",
                  x="weights" if not normalize else "percentage",
                  color="to",
-                 color_discrete_sequence=[x[1] for x in TROPHIC_LAYER_COLORS],
+                 color_discrete_sequence=_get_colors('fw_blue'),
                  #title=_get_title(food_web),
-                 height=width,
+                 height=height,
                  width=width,
                  template="simple_white",
                  hover_data={'from': ':d',
                              'to': ':d',
                              "weights" if not normalize else "percentage":  ':.4f'},
-                 labels={
-                     'from': 'Trophic Layer From',
-                     'to': 'Trophic Layer To',
-                     'percentage': 'Percentage of flow'},
                  orientation='h')
+    fig.update_layout(yaxis={'title': 'Trophic Layer From', 'tickformat': 'd'},
+                      xaxis={'title': 'Percentage of flow', 'tickformat': 'd'},
+                      legend_title='Trophic Layer To',
+                      font={'size': 18})
+
     return fig
 
 
