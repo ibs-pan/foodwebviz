@@ -52,8 +52,22 @@ def _get_log_colorbar(z_orginal):
         tickmode='array',
         tickvals=list(tickvals),
         ticktext=[10**x for x in tickvals]
-    ) 
-    
+    )
+
+
+def _get_colors(cmap):
+    if cmap == 'fw_blue':
+        return [x[1] for x in TROPHIC_LAYER_COLORS]
+    if cmap == 'fw_green':
+        return [x[1] for x in HEATMAP_COLORS]
+
+    if isinstance(cmap, str):
+        raise Exception(f'Pre-defined color map not found: {cmap}')
+
+    if isinstance(cmap, list):
+        return cmap
+
+
 def _get_trophic_layer(graph, from_nodes, to_nodes):
     '''Creates Trace for Heatmap to show thropic levels of X axis nodes.
 
@@ -334,6 +348,7 @@ def draw_network_for_nodes(food_web,
                            height="800px",
                            width="100%",
                            no_flows_to_detritus=True,
+                           cmap='fw_blue',
                            **kwargs):
     '''Visualize subgraph of foodweb as a network.
     Parameters notebook, height, and width refer to initialization parameters of pyvis.network.Network.
@@ -357,7 +372,9 @@ def draw_network_for_nodes(food_web,
         Width of the canvas. See: pyvis.network.Network.hrepulsion
     no_flows_to_detritus : bool, optional (default=True)
         True if only flows to living nodes should be drawn
-
+    cmap : str or list (default="fw_blue")
+        Color map to use. There are two suggested options: fw_blue or fw_green.
+        Optionally, any list of rgb colors might be used.
 
     Returns
     -------
@@ -368,7 +385,7 @@ def draw_network_for_nodes(food_web,
                  width=width,
                  directed=True,
                  layout=True,
-                 heading='') #food_web.title)
+                 heading='')  # food_web.title)
     g = food_web.get_graph(mark_alive_nodes=True, no_flows_to_detritus=no_flows_to_detritus).copy()
 
     if not nodes:
@@ -377,8 +394,8 @@ def draw_network_for_nodes(food_web,
     g = g.edge_subgraph([(x[0], x[1]) for x in g.edges() if x[0].replace(
         f'{fw.NOT_ALIVE_MARK} ', '') in nodes or x[1].replace(f'{fw.NOT_ALIVE_MARK} ', '') in nodes])
 
-    a = {x: {'color': [x[1] for x in TROPHIC_LAYER_COLORS]
-                      [int(decimal.Decimal(attrs['TrophicLevel']).to_integral_value())],
+    colors = _get_colors(cmap)
+    a = {x: {'color': colors[int(decimal.Decimal(attrs['TrophicLevel']).to_integral_value())],
              'level': -attrs['TrophicLevel'],
              'title': f'''{x}<br> TrophicLevel: {attrs["TrophicLevel"]:.2f}
                                 <br> Biomass: {attrs["Biomass"]:.2f}
