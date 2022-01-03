@@ -20,9 +20,10 @@ Installation
 ------------
 Make sure you have Python installed (we recommend Anaconda which comes with a wide range of handy default packages, along with Jupyter Notebooks and convenient Spyder IDE: https://www.anaconda.com/).
 
-1. Install orca first: `npm install -g electron@6.1.4 orca`
-2. To create animations, install ImageMagick: https://docs.wand-py.org/en/0.3.5/guide/install.html (on Linux: 'sudo apt-get install libmagickwand-dev')
-3. Manually download ``foodwebviz`` package from [GitHub](https://github.com/ibs-pan/foodwebviz) and run the following terminal command from the
+1. Install npm: https://docs.npmjs.com/cli/v7/configuring-npm/install
+2. Install orca first: `npm install -g electron@6.1.4 orca`
+3. To create animations, install ImageMagick: https://docs.wand-py.org/en/0.3.5/guide/install.html (on Linux: 'sudo apt-get install libmagickwand-dev')
+4. Manually download ``foodwebviz`` package from [GitHub](https://github.com/ibs-pan/foodwebviz) and run the following terminal command from the
 top-level source directory (on Windows use e.g. Anaconda Prompt):
 
     `$ pip install .`
