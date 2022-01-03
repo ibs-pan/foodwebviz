@@ -9,6 +9,7 @@ import plotly.express as px
 from pyvis.network import Network
 from collections import defaultdict
 import foodwebviz as fw
+import matplotlib
 
 
 __all__ = [
@@ -60,15 +61,17 @@ def _get_log_colorbar(z_orginal):
 
 
 def _get_colors(cmap):
-    colors = TROPHIC_LAYER_COLORS.get(cmap)
-    if colors:
-        return [x[1] for x in colors]
+    return matplotlib.cm.get_cmap('viridis')
+    # if cmap == 'fw_blue':
+    #     return [x[1] for x in TROPHIC_LAYER_COLORS] -----> zamienić na interpolację, np. https://towardsdatascience.com/simple-steps-to-create-custom-colormaps-in-python-f21482778aa2
+    # if cmap == 'fw_green':
+    #     return plt.cm.viridis_r
 
-    if isinstance(cmap, str):
-        raise Exception(f'Pre-defined color map not found: {cmap}')
+    # if isinstance(cmap, str):
+    #     raise Exception(f'Pre-defined color map not found: {cmap}')
 
-    if isinstance(cmap, list):
-        return cmap
+    # if isinstance(cmap, list):
+    #     return cmap
 
 
 def _get_trophic_layer(graph, from_nodes, to_nodes):
@@ -399,8 +402,10 @@ def draw_network_for_nodes(food_web,
     g = g.edge_subgraph([(x[0], x[1]) for x in g.edges() if x[0].replace(
         f'{fw.NOT_ALIVE_MARK} ', '') in nodes or x[1].replace(f'{fw.NOT_ALIVE_MARK} ', '') in nodes])
 
-    colors = _get_colors(cmap)
-    a = {x: {'color': colors[int(decimal.Decimal(attrs['TrophicLevel']).to_integral_value())],
+    colors = _get_colors(cmap)  #we will map trophic levels to colors, reading a colormap from the argument
+    tlint=food_web.get_trophic_interval()
+    norm = matplotlib.colors.Normalize(vmin=tlint[0], vmax=tlint[1]) #we will squeeze trophic level span to [0,1]
+    a = {x: {'color': colors(norm(attrs['TrophicLevel'])),
              'level': -attrs['TrophicLevel'],
              'title': f'''{x}<br> TrophicLevel: {attrs["TrophicLevel"]:.2f}
                                 <br> Biomass: {attrs["Biomass"]:.2f}
