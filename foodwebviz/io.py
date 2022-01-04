@@ -7,14 +7,18 @@ Create a foodweb from a SCOR file
 >>> food_web = read_from_SCOR(file_path)
 '''
 
+import numpy as np
 import pandas as pd
 import foodwebviz as fw
 
 
 __all__ = [
-    'read_from_SCOR',
     'write_to_SCOR',
-    'write_to_XLS'
+    'write_to_XLS',
+    'write_to_CSV',
+    'read_from_SCOR',
+    'read_from_XLS',
+    'read_from_CSV'
 ]
 
 
@@ -146,7 +150,7 @@ def write_to_XLS(food_web, filename):
     ----------
     foodweb : foodwebs.FoodWeb
         Object to save.
-    scor_path: string
+    filename: string
         Destination path.
     '''
     writer = pd.ExcelWriter(filename)
@@ -154,3 +158,74 @@ def write_to_XLS(food_web, filename):
     food_web.node_df.to_excel(writer, sheet_name="Node properties")
     food_web.flow_matrix.to_excel(writer, sheet_name="Internal flows")
     writer.save()
+
+
+def read_from_XLS(filename):
+    '''Read foodweb from an XLS (spreadsheet) file.
+
+    Parameters
+    ----------
+    foodweb : foodwebs.FoodWeb
+        Object to save.
+    filename: string
+        Destination path.
+    '''
+    title = pd.read_excel(filename, sheet_name='Title')
+    node_df = pd.read_excel(filename, sheet_name='Node properties',
+                            dtype={'Names': str,
+                                   'IsAlive': bool,
+                                   'Biomass': np.float64,
+                                   'Import': np.float64,
+                                   'Export': np.float64,
+                                   'Respiration': np.float64,
+                                   'TrophicLevel': np.float64})
+    flow_matrix = pd.read_excel(filename, sheet_name='Internal flows')
+    names = flow_matrix.Names
+    flow_matrix.drop('Names', inplace=True, axis=1)
+    flow_matrix.index = names
+    flow_matrix.columns = names
+    return fw.FoodWeb(title=title.values[0][1], node_df=node_df, flow_matrix=flow_matrix)
+
+
+def write_to_CSV(food_web, filename):
+    '''Writes foodweb to a CSV (spreadsheet) file.
+
+    Parameters
+    ----------
+    foodweb : foodwebs.FoodWeb
+        Object to save.
+    filename: string
+        Destination path.
+    '''
+    data = food_web.flow_matrix
+    data = data.join(food_web.node_df[['IsAlive', 'Biomass', 'Export', 'Respiration', 'TrophicLevel']])
+    data = data.append(food_web.node_df.Import)
+    data = data.fillna(0.0)
+    data.to_csv(filename)
+
+
+def read_from_CSV(filename):
+    '''Reads foodweb from a CSV (spreadsheet) file.
+
+    Parameters
+    ----------
+    foodweb : foodwebs.FoodWeb
+        Object to save.
+    filename: string
+        Destination path.
+    '''
+    data = pd.read_csv(filename).set_index('Names')
+
+    imprt = data.loc[['Import']]
+    data.drop('Import', inplace=True)
+
+    node_columns = ['IsAlive', 'Biomass', 'Export', 'Respiration', 'TrophicLevel']
+    node_df = data[node_columns].copy()
+
+    imprt = imprt[[col for col in imprt.columns if col not in node_columns]]
+    node_df['Import'] = imprt.values[0]
+    node_df['IsAlive'] = node_df['IsAlive'].astype(bool)
+
+    return fw.FoodWeb(title=filename.split('.csv')[0],
+                      node_df=node_df.reset_index(),
+                      flow_matrix=data[[col for col in data.columns if col not in node_columns]])
