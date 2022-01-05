@@ -201,7 +201,7 @@ def write_to_CSV(food_web, filename):
     data = data.join(food_web.node_df[['IsAlive', 'Biomass', 'Export', 'Respiration', 'TrophicLevel']])
     data = data.append(food_web.node_df.Import)
     data = data.fillna(0.0)
-    data.to_csv(filename)
+    data.to_csv(filename, sep=';', encoding='utf-8')
 
 
 def read_from_CSV(filename):
@@ -214,7 +214,7 @@ def read_from_CSV(filename):
     filename: string
         Destination path.
     '''
-    data = pd.read_csv(filename).set_index('Names')
+    data = pd.read_csv(filename, sep=';', encoding='utf-8').set_index('Names')
 
     imprt = data.loc[['Import']]
     data.drop('Import', inplace=True)
