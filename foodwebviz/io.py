@@ -188,11 +188,11 @@ def read_from_XLS(filename):
 
 
 def write_to_CSV(food_web, filename):
-    '''Writes foodweb to a CSV (spreadsheet) file.
+    '''Writes a food web to a CSV (spreadsheet) file, using semicolon as a separator.
 
     Parameters
     ----------
-    foodweb : foodwebs.FoodWeb
+    food_web : foodwebs.FoodWeb
         Object to save.
     filename: string
         Destination path.
@@ -205,16 +205,15 @@ def write_to_CSV(food_web, filename):
 
 
 def read_from_CSV(filename):
-    '''Reads foodweb from a CSV (spreadsheet) file.
+    '''Reads a food web from a CSV (spreadsheet) file.
 
     Parameters
     ----------
-    foodweb : foodwebs.FoodWeb
-        Object to save.
+    
     filename: string
-        Path to the CSV file. The expected format of a semicolon-separated file:
-                Node 1;      Node 2; ...  Node N;      IsAlive;	Biomass;	     Export;	     Respiration /n
-        Node 1; flow_1_to_1; 0.0;    ...; flow_1_to_N; 1;       biomass(Node_1); export(Node_1); Respiration(Node_1) /n
+        Path to the CSV file. The expected format of a semicolon-separated file (see examples/data/Richards_Bay_C_Summer):
+                Node 1;      Node 2;      ... Node N;      IsAlive; Biomass;   Export;	 Respiration 
+        Node 1; flow_1_to_1; flow_1_to_2; ... flow_1_to_N; 1;       biomass_1; export_1; Respiration_1
         Node 2; ...
         ...
         Node N; ...
@@ -222,6 +221,11 @@ def read_from_CSV(filename):
         
         The field IsAlive is 1 for living and 0 for non-living(detrital) nodes. 
         Import, Export and Respiration encode the respective flows crossing the ecosystem boundary.
+        
+    Returns
+    -------
+    foodwebs.FoodWeb object
+                
     '''
     data = pd.read_csv(filename, sep=';', encoding='utf-8').set_index('Names')
 
