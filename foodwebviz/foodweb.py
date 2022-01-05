@@ -172,10 +172,6 @@ class FoodWeb(object):
         '''Returns the sum of all flows.
         '''
         return self.get_flow_matrix(boundary=True).sum()
-    
-    def get_trophic_interval(self):
-        '''Returns a tuple with minimal and maximal trophic level'''
-        return((self.node_df['TrophicLevel'].min(), self.node_df['TrophicLevel'].max()))
 
     def get_norm_node_prop(self):
         num_node_prop = self.node_df[["Biomass", "Import", "Export", "Respiration"]]

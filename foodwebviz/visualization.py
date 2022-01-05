@@ -3,14 +3,14 @@ import decimal
 import numpy as np
 import pandas as pd
 import networkx as nx
+import matplotlib.colors
 import plotly.graph_objects as go
 import plotly.express as px
 
+from matplotlib import pyplot as plt
 from pyvis.network import Network
 from collections import defaultdict
 import foodwebviz as fw
-import matplotlib
-
 
 __all__ = [
     'draw_heatmap',
@@ -61,17 +61,16 @@ def _get_log_colorbar(z_orginal):
 
 
 def _get_colors(cmap):
-    return matplotlib.cm.get_cmap('viridis')
-    # if cmap == 'fw_blue':
-    #     return [x[1] for x in TROPHIC_LAYER_COLORS] -----> zamienić na interpolację, np. https://towardsdatascience.com/simple-steps-to-create-custom-colormaps-in-python-f21482778aa2
-    # if cmap == 'fw_green':
-    #     return plt.cm.viridis_r
+    if cmap == 'fw_blue':
+        return [x[1] for x in TROPHIC_LAYER_COLORS] # -----> zamienić na interpolację, np. https://towardsdatascience.com/simple-steps-to-create-custom-colormaps-in-python-f21482778aa2
+    if cmap == 'fw_green':
+        return plt.cm.viridis_r
 
-    # if isinstance(cmap, str):
-    #     raise Exception(f'Pre-defined color map not found: {cmap}')
+    if isinstance(cmap, str):
+        raise Exception(f'Pre-defined color map not found: {cmap}')
 
-    # if isinstance(cmap, list):
-    #     return cmap
+    if isinstance(cmap, list):
+        return cmap
 
 
 def _get_trophic_layer(graph, from_nodes, to_nodes):
@@ -393,6 +392,8 @@ def draw_network_for_nodes(food_web,
                  width=width,
                  directed=True,
                  layout=True,
+                 font_color='white',
+                 cmap = 'viridis',
                  heading='')  # food_web.title)
     g = food_web.get_graph(mark_alive_nodes=True, no_flows_to_detritus=no_flows_to_detritus).copy()
 
@@ -402,10 +403,11 @@ def draw_network_for_nodes(food_web,
     g = g.edge_subgraph([(x[0], x[1]) for x in g.edges() if x[0].replace(
         f'{fw.NOT_ALIVE_MARK} ', '') in nodes or x[1].replace(f'{fw.NOT_ALIVE_MARK} ', '') in nodes])
 
-    colors = _get_colors(cmap)  #we will map trophic levels to colors, reading a colormap from the argument
-    tlint=food_web.get_trophic_interval()
-    norm = matplotlib.colors.Normalize(vmin=tlint[0], vmax=tlint[1]) #we will squeeze trophic level span to [0,1]
-    a = {x: {'color': colors(norm(attrs['TrophicLevel'])),
+    colors = plt.cm.get_cmap(cmap)
+    norm = matplotlib.colors.Normalize(vmin=food_web.node_df.TrophicLevel.min(),
+                                       vmax=food_web.node_df.TrophicLevel.max())
+
+    a = {x: {'color': f"rgb({', '.join(map(str, colors(norm(attrs['TrophicLevel']), bytes=True)[:3]))})",
              'level': -attrs['TrophicLevel'],
              'title': f'''{x}<br> TrophicLevel: {attrs["TrophicLevel"]:.2f}
                                 <br> Biomass: {attrs["Biomass"]:.2f}
@@ -421,5 +423,6 @@ def draw_network_for_nodes(food_web,
     nt.from_nx(g)
     nt.hrepulsion(node_distance=220, **kwargs)
     nt.set_edge_smooth('discrete')
+    # nt.set_options('var options = {"nodes": { "font": { "color": "rgba(236,238,249,1)", "size": 16}}}')
     nt.show_buttons(filter_='physics')
     return nt.show(file_name)
