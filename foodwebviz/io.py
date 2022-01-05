@@ -177,8 +177,8 @@ def read_from_XLS(filename):
                                    'Biomass': np.float64,
                                    'Import': np.float64,
                                    'Export': np.float64,
-                                   'Respiration': np.float64,
-                                   'TrophicLevel': np.float64})
+                                   'Respiration': np.float64
+                                   })
     flow_matrix = pd.read_excel(filename, sheet_name='Internal flows')
     names = flow_matrix.Names
     flow_matrix.drop('Names', inplace=True, axis=1)
@@ -212,7 +212,16 @@ def read_from_CSV(filename):
     foodweb : foodwebs.FoodWeb
         Object to save.
     filename: string
-        Destination path.
+        Path to the CSV file. The expected format of a semicolon-separated file:
+                Node 1;      Node 2; ...  Node N;      IsAlive;	Biomass;	     Export;	     Respiration /n
+        Node 1; flow_1_to_1; 0.0;    ...; flow_1_to_N; 1;       biomass(Node_1); export(Node_1); Respiration(Node_1) /n
+        Node 2; ...
+        ...
+        Node N; ...
+        Import; import_1; ...
+        
+        The field IsAlive is 1 for living and 0 for non-living(detrital) nodes. 
+        Import, Export and Respiration encode the respective flows crossing the ecosystem boundary.
     '''
     data = pd.read_csv(filename, sep=';', encoding='utf-8').set_index('Names')
 
