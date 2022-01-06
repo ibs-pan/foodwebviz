@@ -22,18 +22,12 @@ __all__ = [
 
 decimal.getcontext().rounding = decimal.ROUND_HALF_UP
 
-TROPHIC_LAYER_COLORS = {
-    'fw_blue': [[0, 'rgb(255, 255, 255)'],
-                [0.2, 'rgb(214, 233, 255)'],
-                [0.4, 'rgb(197, 218, 251)'],
-                [0.6, 'rgb(182, 201, 247)'],
-                [0.8, 'rgb( 168, 183, 240 )'],
-                [1.0, 'rgb(  167, 167, 221 )']],
-    'fw_green': [[0.0,  'rgb(222, 232, 84)'],
-                 [0.25, 'rgb( 117, 188, 36)'],
-                 [0.5,  'rgb( 27, 167, 50 )'],
-                 [0.75, 'rgb( 28, 125, 57 )'],
-                 [1.0,  'rgb(68, 33, 110)']]}
+TROPHIC_LAYER_COLORS = [[0, 'rgb(255, 255, 255)'],
+                        [0.2, 'rgb(214, 233, 255)'],
+                        [0.4, 'rgb(197, 218, 251)'],
+                        [0.6, 'rgb(182, 201, 247)'],
+                        [0.8, 'rgb(168, 183, 240 )'],
+                        [1.0, 'rgb(167, 167, 221 )']]
 
 HEATMAP_COLORS = [
     [0.0, 'rgb(222, 232, 84)'],
@@ -58,19 +52,6 @@ def _get_log_colorbar(z_orginal):
         tickvals=list(tickvals),
         ticktext=[10**x for x in tickvals]
     )
-
-
-def _get_colors(cmap):
-    if cmap == 'fw_blue':
-        return [x[1] for x in TROPHIC_LAYER_COLORS] # -----> zamienić na interpolację, np. https://towardsdatascience.com/simple-steps-to-create-custom-colormaps-in-python-f21482778aa2
-    if cmap == 'fw_green':
-        return plt.cm.viridis_r
-
-    if isinstance(cmap, str):
-        raise Exception(f'Pre-defined color map not found: {cmap}')
-
-    if isinstance(cmap, list):
-        return cmap
 
 
 def _get_trophic_layer(graph, from_nodes, to_nodes):
@@ -322,16 +303,16 @@ def draw_trophic_flows_distribution(food_web, normalize=True, width=1000, height
     '''
     tf_pd = _get_trophic_flows(food_web)
     tf_pd['to'] = tf_pd['to'].astype(str)
-    tf_pd['from'] = tf_pd['from'].astype(str)
+    tf_pd = tf_pd.sort_values('to')
 
     if normalize:
-        tf_pd['percentage'] = tf_pd['weights'] / tf_pd.groupby('from')['weights'].transform('sum')
+        tf_pd['percentage'] = tf_pd['weights'] / tf_pd.groupby('from')['weights'].transform('sum') * 100
 
     fig = px.bar(tf_pd,
                  y="from",
                  x="weights" if not normalize else "percentage",
                  color="to",
-                 color_discrete_sequence=_get_colors('fw_blue'),
+                 color_discrete_sequence=[x[1] for x in TROPHIC_LAYER_COLORS[1:]],
                  #title=_get_title(food_web),
                  height=height,
                  width=width,
@@ -340,8 +321,8 @@ def draw_trophic_flows_distribution(food_web, normalize=True, width=1000, height
                              'to': ':d',
                              "weights" if not normalize else "percentage":  ':.4f'},
                  orientation='h')
-    fig.update_layout(yaxis={'title': 'Trophic Layer From', 'tickformat': 'd'},
-                      xaxis={'title': 'Percentage of flow', 'tickformat': 'd'},
+    fig.update_layout(yaxis={'title': 'Trophic Layer From', 'tickformat': ',d'},
+                      xaxis={'title': 'Percentage of flow'},
                       legend_title='Trophic Layer To',
                       font={'size': 18})
 
@@ -393,7 +374,7 @@ def draw_network_for_nodes(food_web,
                  directed=True,
                  layout=True,
                  font_color='white',
-                 cmap = 'viridis',
+                 cmap='viridis',
                  heading='')  # food_web.title)
     g = food_web.get_graph(mark_alive_nodes=True, no_flows_to_detritus=no_flows_to_detritus).copy()
 
