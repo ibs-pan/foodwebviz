@@ -172,14 +172,19 @@ def read_from_XLS(filename):
     '''
     title = pd.read_excel(filename, sheet_name='Title')
     node_df = pd.read_excel(filename, sheet_name='Node properties',
+                            # will fail if any of those columns is missing
+                            usecols=['Names', 'IsAlive', 'Biomass', 'Import', 'Export', 'Respiration'],
                             dtype={'Names': str,
                                    'IsAlive': bool,
                                    'Biomass': np.float64,
                                    'Import': np.float64,
                                    'Export': np.float64,
-                                   'Respiration': np.float64,
-                                   'TrophicLevel': np.float64})
+                                   'Respiration': np.float64})
     flow_matrix = pd.read_excel(filename, sheet_name='Internal flows')
+    if not np.array_equal(flow_matrix.columns.values[1:], flow_matrix.Names.values):
+        raise Exception('Flow matrix (Internal flows sheet) should have exactly same rows as columns.')
+ 
+
     names = flow_matrix.Names
     flow_matrix.drop('Names', inplace=True, axis=1)
     flow_matrix.index = names
@@ -216,16 +221,26 @@ def read_from_CSV(filename):
     '''
     data = pd.read_csv(filename, sep=';', encoding='utf-8').set_index('Names')
 
+    if 'Import' not in data.index:
+        raise Exception('Import row is missing.')
+
     imprt = data.loc[['Import']]
     data.drop('Import', inplace=True)
 
     node_columns = ['IsAlive', 'Biomass', 'Export', 'Respiration', 'TrophicLevel']
+    for col in node_columns:
+        if col not in data.columns:
+            raise Exception(f'{col} columns is missing.')
     node_df = data[node_columns].copy()
 
     imprt = imprt[[col for col in imprt.columns if col not in node_columns]]
     node_df['Import'] = imprt.values[0]
     node_df['IsAlive'] = node_df['IsAlive'].astype(bool)
 
+    flow_matrix = data[[col for col in data.columns if col not in node_columns]]
+    if not np.array_equal(flow_matrix.columns, flow_matrix.index):
+        raise Exception('Flow matrix (Internal flows sheet) should have exactly same rows as columns.')
+
     return fw.FoodWeb(title=filename.split('.csv')[0],
                       node_df=node_df.reset_index(),
-                      flow_matrix=data[[col for col in data.columns if col not in node_columns]])
+                      flow_matrix=flow_matrix)
