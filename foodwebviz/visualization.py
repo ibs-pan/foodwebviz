@@ -85,7 +85,7 @@ def _get_trophic_layer(graph, from_nodes, to_nodes):
         ygap=0.2,
         zmin=min(z),
         zmax=max(z) + 3,
-        colorscale=TROPHIC_LAYER_COLORS['fw_blue'],
+        colorscale=TROPHIC_LAYER_COLORS, #same as cmap='fw_blue'
         name='Trophic Layer',
         hoverinfo='skip'
     )
