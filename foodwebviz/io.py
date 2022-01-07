@@ -86,16 +86,20 @@ def read_from_SCOR(scor_path):
             raise Exception('Invalid SCOR file format.')
 
         n, n_living = int(size[0]), int(size[1])
+        if n_living>n:
+                raise Exception('Invalid input. The number of living species has to be smaller than the number of all nodes.')
+        assert (n>0 and n_living>0), "Number of nodes and number of living nodes have to be positive integers."
         lines = [x.strip() for x in f.readlines()]
 
         net = pd.DataFrame(index=range(1, n+1))
         net['Names'] = lines[:n]
+        
         net['IsAlive'] = [i < n_living for i in range(n)]
 
         for i, col in enumerate(['Biomass', 'Import', 'Export', 'Respiration']):
             # each section should end with -1
             if lines[(i + 1) * n + i + n] != '-1':
-                raise Exception(f'Invalid SCOR file format. {col} section is wrong.')
+                raise Exception(f'Invalid SCOR file format. {col} section could be wrong, the separator -1 could be in a wrong place, names list could have wrong length.')
 
             net[col] = [float(x.split(' ')[1])
                         for x in lines[(i + 1) * n + i: (i + 2) * n + i]]
@@ -230,7 +234,7 @@ def read_from_CSV(filename):
     node_columns = ['IsAlive', 'Biomass', 'Export', 'Respiration', 'TrophicLevel']
     for col in node_columns:
         if col not in data.columns:
-            raise Exception(f'{col} columns is missing.')
+            raise Exception(f'{col} column is missing.')
     node_df = data[node_columns].copy()
 
     imprt = imprt[[col for col in imprt.columns if col not in node_columns]]
