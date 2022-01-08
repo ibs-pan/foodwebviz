@@ -3,13 +3,14 @@ import decimal
 import numpy as np
 import pandas as pd
 import networkx as nx
+import matplotlib.colors
 import plotly.graph_objects as go
 import plotly.express as px
 
+from matplotlib import pyplot as plt
 from pyvis.network import Network
 from collections import defaultdict
 import foodwebviz as fw
-
 
 __all__ = [
     'draw_heatmap',
@@ -21,14 +22,12 @@ __all__ = [
 
 decimal.getcontext().rounding = decimal.ROUND_HALF_UP
 
-TROPHIC_LAYER_COLORS = [
-    [0, 'rgb(255, 255, 255)'],
-    [0.2, 'rgb(214, 233, 255)'],
-    [0.4, 'rgb(197, 218, 251)'],
-    [0.6, 'rgb(182, 201, 247)'],
-    [0.8, 'rgb( 168, 183, 240 )'],
-    [1.0, 'rgb(  167, 167, 221 )']
-]
+TROPHIC_LAYER_COLORS = [[0, 'rgb(255, 255, 255)'],
+                        [0.2, 'rgb(214, 233, 255)'],
+                        [0.4, 'rgb(197, 218, 251)'],
+                        [0.6, 'rgb(182, 201, 247)'],
+                        [0.8, 'rgb(168, 183, 240 )'],
+                        [1.0, 'rgb(167, 167, 221 )']]
 
 HEATMAP_COLORS = [
     [0.0, 'rgb(222, 232, 84)'],
@@ -52,8 +51,9 @@ def _get_log_colorbar(z_orginal):
         tickmode='array',
         tickvals=list(tickvals),
         ticktext=[10**x for x in tickvals]
-    ) 
-    
+    )
+
+
 def _get_trophic_layer(graph, from_nodes, to_nodes):
     '''Creates Trace for Heatmap to show thropic levels of X axis nodes.
 
@@ -85,7 +85,7 @@ def _get_trophic_layer(graph, from_nodes, to_nodes):
         ygap=0.2,
         zmin=min(z),
         zmax=max(z) + 3,
-        colorscale=TROPHIC_LAYER_COLORS,
+        colorscale=TROPHIC_LAYER_COLORS, #same as cmap='fw_blue'
         name='Trophic Layer',
         hoverinfo='skip'
     )
@@ -303,27 +303,29 @@ def draw_trophic_flows_distribution(food_web, normalize=True, width=1000, height
     '''
     tf_pd = _get_trophic_flows(food_web)
     tf_pd['to'] = tf_pd['to'].astype(str)
+    tf_pd = tf_pd.sort_values('to')
 
     if normalize:
-        tf_pd['percentage'] = tf_pd['weights'] / tf_pd.groupby('from')['weights'].transform('sum')
+        tf_pd['percentage'] = tf_pd['weights'] / tf_pd.groupby('from')['weights'].transform('sum') * 100
 
     fig = px.bar(tf_pd,
                  y="from",
                  x="weights" if not normalize else "percentage",
                  color="to",
-                 color_discrete_sequence=[x[1] for x in TROPHIC_LAYER_COLORS],
+                 color_discrete_sequence=[x[1] for x in TROPHIC_LAYER_COLORS[1:]],
                  #title=_get_title(food_web),
-                 height=width,
+                 height=height,
                  width=width,
                  template="simple_white",
                  hover_data={'from': ':d',
                              'to': ':d',
                              "weights" if not normalize else "percentage":  ':.4f'},
-                 labels={
-                     'from': 'Trophic Layer From',
-                     'to': 'Trophic Layer To',
-                     'percentage': 'Percentage of flow'},
                  orientation='h')
+    fig.update_layout(yaxis={'title': 'Trophic Layer From', 'tickformat': ',d'},
+                      xaxis={'title': 'Percentage of flow'},
+                      legend_title='Trophic Layer To',
+                      font={'size': 18})
+
     return fig
 
 
@@ -334,6 +336,7 @@ def draw_network_for_nodes(food_web,
                            height="800px",
                            width="100%",
                            no_flows_to_detritus=True,
+                           cmap='viridis',
                            **kwargs):
     '''Visualize subgraph of foodweb as a network.
     Parameters notebook, height, and width refer to initialization parameters of pyvis.network.Network.
@@ -357,7 +360,9 @@ def draw_network_for_nodes(food_web,
         Width of the canvas. See: pyvis.network.Network.hrepulsion
     no_flows_to_detritus : bool, optional (default=True)
         True if only flows to living nodes should be drawn
-
+    cmap : str (default='viridis')
+        Color map representing trophic level as node colour. 
+        One of named matplotlib continuous color maps: https://matplotlib.org/stable/tutorials/colors/colormaps.html
 
     Returns
     -------
@@ -368,7 +373,8 @@ def draw_network_for_nodes(food_web,
                  width=width,
                  directed=True,
                  layout=True,
-                 heading='') #food_web.title)
+                 font_color='white',
+                 heading='')  # food_web.title)
     g = food_web.get_graph(mark_alive_nodes=True, no_flows_to_detritus=no_flows_to_detritus).copy()
 
     if not nodes:
@@ -377,8 +383,11 @@ def draw_network_for_nodes(food_web,
     g = g.edge_subgraph([(x[0], x[1]) for x in g.edges() if x[0].replace(
         f'{fw.NOT_ALIVE_MARK} ', '') in nodes or x[1].replace(f'{fw.NOT_ALIVE_MARK} ', '') in nodes])
 
-    a = {x: {'color': [x[1] for x in TROPHIC_LAYER_COLORS]
-                      [int(decimal.Decimal(attrs['TrophicLevel']).to_integral_value())],
+    colors = plt.cm.get_cmap(cmap)
+    norm = matplotlib.colors.Normalize(vmin=food_web.node_df.TrophicLevel.min(),
+                                       vmax=food_web.node_df.TrophicLevel.max())
+
+    a = {x: {'color': f"rgb({', '.join(map(str, colors(norm(attrs['TrophicLevel']), bytes=True)[:3]))})",
              'level': -attrs['TrophicLevel'],
              'title': f'''{x}<br> TrophicLevel: {attrs["TrophicLevel"]:.2f}
                                 <br> Biomass: {attrs["Biomass"]:.2f}
@@ -394,5 +403,6 @@ def draw_network_for_nodes(food_web,
     nt.from_nx(g)
     nt.hrepulsion(node_distance=220, **kwargs)
     nt.set_edge_smooth('discrete')
+    # nt.set_options('var options = {"nodes": { "font": { "color": "rgba(236,238,249,1)", "size": 16}}}')
     nt.show_buttons(filter_='physics')
     return nt.show(file_name)
