@@ -360,9 +360,9 @@ def draw_network_for_nodes(food_web,
         Width of the canvas. See: pyvis.network.Network.hrepulsion
     no_flows_to_detritus : bool, optional (default=True)
         True if only flows to living nodes should be drawn
-    cmap : str or list (default="fw_blue")
-        Color map to use. There are two suggested options: fw_blue or fw_green.
-        Optionally, any list of rgb colors might be used.
+    cmap : str (default='viridis')
+        Color map representing trophic level as node colour. 
+        One of named matplotlib continuous color maps: https://matplotlib.org/stable/tutorials/colors/colormaps.html
 
     Returns
     -------
