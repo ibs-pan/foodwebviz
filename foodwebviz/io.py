@@ -94,6 +94,13 @@ def read_from_SCOR(scor_path):
             raise Exception('Invalid SCOR file format.')
 
         n, n_living = int(size[0]), int(size[1])
+        if n_living > n:
+            raise Exception('Invalid input. The number of living species \
+                             has to be smaller than the number of all nodes.')
+
+        if n <= 0 or n_living <= 0:
+            raise Exception('Number of nodes and number of living nodes have to be positive integers.')
+
         lines = [x.strip() for x in f.readlines()]
 
         net = pd.DataFrame(index=range(1, n+1))
@@ -103,7 +110,9 @@ def read_from_SCOR(scor_path):
         for i, col in enumerate(['Biomass', 'Import', 'Export', 'Respiration']):
             # each section should end with -1
             if lines[(i + 1) * n + i + n] != '-1':
-                raise Exception(f'Invalid SCOR file format. {col} section is wrong.')
+                raise Exception(f'Invalid SCOR file format. {col} section could be wrong, \
+                                  the separator -1 could be in a wrong place, names list \
+                                  could have wrong length.')
 
             net[col] = [float(x.split(' ')[1])
                         for x in lines[(i + 1) * n + i: (i + 2) * n + i]]
@@ -240,6 +249,8 @@ def read_from_XLS(filename):
     '''
     title = pd.read_excel(filename, sheet_name='Title')
     node_df = pd.read_excel(filename, sheet_name='Node properties',
+                            # will fail if any of those columns is missing
+                            usecols=['Names', 'IsAlive', 'Biomass', 'Import', 'Export', 'Respiration'],
                             dtype={'Names': str,
                                    'IsAlive': bool,
                                    'Biomass': np.float64,
@@ -248,6 +259,11 @@ def read_from_XLS(filename):
                                    'Respiration': np.float64
                                    })
     flow_matrix = pd.read_excel(filename, sheet_name='Internal flows')
+    if not np.array_equal(flow_matrix.columns.values[1:], flow_matrix.Names.values):
+        raise Exception('Flow matrix (Internal flows sheet) should have exactly same rows as columns.')
+    if (flow_matrix < 0).any().any():
+        raise Exception('Flow matrix contains negative values.')
+
     names = flow_matrix.Names
     flow_matrix.drop('Names', inplace=True, axis=1)
     flow_matrix.index = names
@@ -297,16 +313,40 @@ def read_from_CSV(filename):
     '''
     data = pd.read_csv(filename, sep=';', encoding='utf-8').set_index('Names')
 
+    if 'Import' not in data.index:
+        raise Exception('Import row is missing.')
+
     imprt = data.loc[['Import']]
     data.drop('Import', inplace=True)
 
     node_columns = ['IsAlive', 'Biomass', 'Export', 'Respiration', 'TrophicLevel']
+    for col in node_columns:
+        if col not in data.columns:
+            raise Exception(f'{col} column is missing.')
     node_df = data[node_columns].copy()
 
     imprt = imprt[[col for col in imprt.columns if col not in node_columns]]
     node_df['Import'] = imprt.values[0]
+
+    if not all(node_df['IsAlive'].isin([1.0, 0.0])) or not all(node_df['IsAlive'].isin([True, False])):
+        raise Exception('IsAlive column should have only True/False values.')
+
     node_df['IsAlive'] = node_df['IsAlive'].astype(bool)
+
+    flow_matrix = data[[col for col in data.columns if col not in node_columns]]
+
+    if (flow_matrix < 0).any().any():
+        raise Exception('Flow matrix contains negative values.')
+
+    if not np.array_equal(flow_matrix.columns, flow_matrix.index):
+        raise Exception('Flow matrix (Internal flows sheet) should have exactly same rows as columns.')
 
     return fw.FoodWeb(title=filename.split('.csv')[0],
                       node_df=node_df.reset_index(),
-                      flow_matrix=data[[col for col in data.columns if col not in node_columns]])
+                      flow_matrix=flow_matrix)
+
+
+if __name__ == '__main__':
+    f = read_from_SCOR('Alaska_Prince_William_Sound.scor')
+    write_to_CSV(f, 'heh.csv')
+    read_from_CSV('heh.csv')
