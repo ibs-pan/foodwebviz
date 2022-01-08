@@ -336,7 +336,7 @@ def draw_network_for_nodes(food_web,
                            height="800px",
                            width="100%",
                            no_flows_to_detritus=True,
-                           cmap='fw_blue',
+                           cmap='viridis',
                            **kwargs):
     '''Visualize subgraph of foodweb as a network.
     Parameters notebook, height, and width refer to initialization parameters of pyvis.network.Network.
@@ -374,7 +374,6 @@ def draw_network_for_nodes(food_web,
                  directed=True,
                  layout=True,
                  font_color='white',
-                 cmap='viridis',
                  heading='')  # food_web.title)
     g = food_web.get_graph(mark_alive_nodes=True, no_flows_to_detritus=no_flows_to_detritus).copy()
 
