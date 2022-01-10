@@ -101,7 +101,7 @@ def _get_trophic_flows(food_web):
     normalization : string, optional (default=linear)
         Defines method of graph edges normalization.
         Available options are: 'diet', 'log', 'donor_control',
-        'predator_control', 'mixed_control', 'linear' and 'tst'.
+        'predator_control', 'mixed_control', 'linear' and 'TST'.
 
     Returns
     -------
@@ -142,7 +142,7 @@ def draw_heatmap(food_web, boundary=False, normalization='log',
     normalization : string, optional (default=log)
         Defines method of graph edges normalization.
         Available options are: 'diet', 'log', 'donor_control',
-        'predator_control', 'mixed_control', 'linear' and 'tst'.
+        'predator_control', 'mixed_control', 'linear' and 'TST'.
     show_trophic_layer : bool, optional (default=False)
         If True, include additional heatmap layer presenting trophic levels relevant to X axis.
     switch_axes : bool, optional (default=False)

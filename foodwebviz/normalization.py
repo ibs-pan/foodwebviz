@@ -153,7 +153,7 @@ def normalization_factory(foodweb_graph_view, norm_type):
         'mixed_control': mixed_control_normalization,
         'log': log_normalization,
         'diet': diet_normalization,
-        'tst': tst_normalization
+        'TST': tst_normalization
     }
 
     if norm_type == 'linear':
