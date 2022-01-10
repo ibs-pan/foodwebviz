@@ -35,7 +35,7 @@ Tutorial
 - ``examples/foodwebviz_tutorial.ipynb`` is an interactive Jupyter Notebook with code examples and functionality overview.
 
 To get information on a specific function/method "function_name" please execute "help(function_name)" in a Jupyter Notebook or Python console.
-You can also play with the tutorial notebook without installing the package locally: https://mybinder.org/v2/gh/ibs-pan/foodwebviz/master?filepath=examples%2Fvisualization.ipynb
+You can also play with the tutorial notebook without installing the package locally: https://mybinder.org/v2/gh/ibs-pan/foodwebviz/master?filepath=examples%2Ffoodwebviz_tutorial.ipynb
 
 
 
