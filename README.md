@@ -10,7 +10,7 @@ Gallery
 -------
 ![Heatmap of carbon flows over the continental shelf north of Richards Bay, South Africa](https://github.com/ibs-pan/foodwebviz/blob/master/examples/sample_output/Heatmap_Richards_Bay.png)
 
-![Screenshot of an interactive graph visualisation of the Prince William Sound food web, Alaska](https://github.com/ibs-pan/foodwebviz/blob/master/examples/sample_output/Graph_Prince_William_Sound_Alaska.png)
+![Screenshot of an interactive graph visualisation of the Prince William Sound food web, Alaska](https://github.com/ibs-pan/foodwebviz/blob/master/examples/sample_output/Alaska_interactive_with_panel.png)
 
 ![Animated flow network of Richards Bay food web](https://github.com/ibs-pan/foodwebviz/blob/master/examples/sample_output/Animation_Richards_Bay_South_Africa.gif)
 
@@ -32,6 +32,7 @@ top-level source directory (on Windows use e.g. Anaconda Prompt):
 Tutorial
 --------
 - ``examples/sample_output`` contains examples of visualisations (screenshots of interactive heatmap and graph visualisations)
+- ``examples/interactive_food_web_graph.html`` is an example of an interactive graph in HTML that can be viewed also without installing everything
 - ``examples/foodwebviz_tutorial.ipynb`` is an interactive Jupyter Notebook with code examples and functionality overview.
 
 To get information on a specific function/method "function_name" please execute "help(function_name)" in a Jupyter Notebook or Python console.
