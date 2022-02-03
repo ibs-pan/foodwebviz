@@ -278,7 +278,8 @@ def draw_trophic_flows_heatmap(food_web, switch_axes=False, log_scale=False, wid
                       yaxis={'title': 'Trophic Layer From'if not switch_axes else 'Trophic Layer To',
                              'dtick': 1},
                       xaxis={'title': 'Trophic Layer To' if not switch_axes else 'Trophic Layer From',
-                             'dtick': 1}
+                             'dtick': 1},
+                      font={'size': 24}
                       )
     return fig
 
@@ -324,7 +325,7 @@ def draw_trophic_flows_distribution(food_web, normalize=True, width=1000, height
     fig.update_layout(yaxis={'title': 'Trophic Layer From', 'tickformat': ',d'},
                       xaxis={'title': 'Percentage of flow'},
                       legend_title='Trophic Layer To',
-                      font={'size': 18})
+                      font={'size': 22})
 
     return fig
 
