@@ -127,7 +127,7 @@ def _get_array_order(graph, nodes, reverse=False):
 
 def draw_heatmap(food_web, boundary=False, normalization='log',
                  show_trophic_layer=True, switch_axes=False,
-                 width=1200, height=800):
+                 width=1200, height=800, font_size=14):
     '''Visualize foodweb as a heatmap. On the interesction
     of X axis ("from" node) and Y axis ("to" node) flow weight
     is indicated.
@@ -151,6 +151,8 @@ def draw_heatmap(food_web, boundary=False, normalization='log',
         Width of the heatmap plot, large foodwebs might not fit in default width.
     height : int, optional (default=800)
         Height of the heatmap plot, large foodwebs might not fit in default height.
+    font_size: int, optional (default=18)
+        font size of labels
 
     Returns
     -------
@@ -215,13 +217,14 @@ def draw_heatmap(food_web, boundary=False, normalization='log',
                           xanchor="right",
                           x=1,
                           y=1),
+                      font={'size': font_size}
                       )
     fig.update_xaxes(showspikes=True, spikethickness=0.5)
     fig.update_yaxes(showspikes=True, spikesnap="cursor", spikemode="across", spikethickness=0.5)
     return fig
 
 
-def draw_trophic_flows_heatmap(food_web, switch_axes=False, log_scale=False, width=1200, height=800):
+def draw_trophic_flows_heatmap(food_web, switch_axes=False, log_scale=False, width=1200, height=800, font_size=24):
     '''Visualize flows between foodweb's trophic levels as a heatmap.
     The color at (x,y) represents the sum of flows from trophic level x to
     trophic level y.
@@ -237,7 +240,9 @@ def draw_trophic_flows_heatmap(food_web, switch_axes=False, log_scale=False, wid
     width : int, optional (default=1200)
         Width of the plot.
     height : int, optional (default=800)
-        Height of the plot.
+        Height of the plot
+    font_size: int, optional (default=18)
+        Font size of labels
 
     Returns
     -------
@@ -279,12 +284,12 @@ def draw_trophic_flows_heatmap(food_web, switch_axes=False, log_scale=False, wid
                              'dtick': 1},
                       xaxis={'title': 'Trophic Layer To' if not switch_axes else 'Trophic Layer From',
                              'dtick': 1},
-                      font={'size': 24}
+                      font={'size': font_size}
                       )
     return fig
 
 
-def draw_trophic_flows_distribution(food_web, normalize=True, width=1000, height=800):
+def draw_trophic_flows_distribution(food_web, normalize=True, width=1000, height=800, font_size=24):
     '''Visualize flows between trophic levels as a stacked bar chart.
 
     Parameters
@@ -325,7 +330,7 @@ def draw_trophic_flows_distribution(food_web, normalize=True, width=1000, height
     fig.update_layout(yaxis={'title': 'Trophic Layer From', 'tickformat': ',d'},
                       xaxis={'title': 'Percentage of flow'},
                       legend_title='Trophic Layer To',
-                      font={'size': 22})
+                      font={'size': font_size})
 
     return fig
 
