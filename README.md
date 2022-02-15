@@ -10,7 +10,7 @@ Gallery
 -------
 ![Heatmap of carbon flows over the continental shelf north of Richards Bay, South Africa](https://github.com/ibs-pan/foodwebviz/blob/master/examples/sample_output/Heatmap_Richards_Bay.png)
 
-![Screenshot of an interactive graph visualisation of the Prince William Sound food web, Alaska](https://github.com/ibs-pan/foodwebviz/blob/master/examples/sample_output/Alaska_interactive_with_panel.png)
+![Screenshot of an interactive graph visualisation of the Prince William Sound food web, Alaska](https://github.com/ibs-pan/foodwebviz/blob/master/examples/sample_output/Interactive_graph_Alaska.png)
 
 ![Animated flow network of Richards Bay food web](https://github.com/ibs-pan/foodwebviz/blob/master/examples/sample_output/Animation_Richards_Bay_South_Africa.gif)
 
