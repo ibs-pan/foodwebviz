@@ -59,13 +59,15 @@ Citation
 
 When using foodwebviz package please cite:
 
-Łukasz Pawluczuk, Mateusz Iskrzyński (2021) Food web visualisation: heatmap, interactive graph, animated flow network. https://github.com/ibs-pan/foodwebviz (currently in review in Methods in Ecology and Evolution)
+Łukasz Pawluczuk, Mateusz Iskrzyński (2022) Food web visualisation: heatmap, interactive graph, animated flow network. Methods in Ecology and Evolution https://doi.org/10.1111/2041-210X.13839, https://github.com/ibs-pan/foodwebviz (in production, to appear March 2022)
 
 A BibTeX entry for LaTeX users:
 
 @article{foodwebviz,
 author={Łukasz Pawluczuk and Mateusz Iskrzyński},
 title={Food web visualisation: heatmap, interactive graph, animated flow network},
-year={2021},
+year={2022},
+journal={Methods in Ecology and Evolution},
+doi={10.1111/2041-210X.13839}
 url={https://github.com/ibs-pan/foodwebviz }
 }
