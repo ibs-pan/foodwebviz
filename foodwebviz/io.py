@@ -261,13 +261,12 @@ def read_from_XLS(filename):
     flow_matrix = pd.read_excel(filename, sheet_name='Internal flows')
     if not np.array_equal(flow_matrix.columns.values[1:], flow_matrix.Names.values):
         raise Exception('Flow matrix (Internal flows sheet) should have exactly same rows as columns.')
-    if (flow_matrix < 0).any().any():
-        raise Exception('Flow matrix contains negative values.')
-
     names = flow_matrix.Names
     flow_matrix.drop('Names', inplace=True, axis=1)
     flow_matrix.index = names
     flow_matrix.columns = names
+    if (flow_matrix < 0).any().any():
+        raise Exception('Flow matrix contains negative values.')
     return fw.FoodWeb(title=title.values[0][1], node_df=node_df, flow_matrix=flow_matrix)
 
 
