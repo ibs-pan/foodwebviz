@@ -95,18 +95,15 @@ class NetworkImage(object):
         return grouped
 
     def _get_node_attributes(self, net):
-        # number of trophic levels that should be in one horizontal band
-        trophic_levels_cnt = 0.2 + 10 / net.n
-
+        #function sets initial node positions before an interative layout algorithm will optimise them
         # node positions are based upon node properties, here on trophic levels
         pos_df = net.node_df[['TrophicLevel', 'Biomass']].reset_index().set_index('Names', drop=False).copy()
+        
 
-        # we aggregate trophic levels within integers in order to evenly distribute them horizontally
-        trophic_levels_bins = list(map(
-            lambda x: trophic_levels_cnt * x,
-            range(1, int(14 / trophic_levels_cnt))))
+        #assuming 5 nodes per band on average, we get the number of bins
+        trophic_levels_bins = int(net.n / 5)+1
 
-        # bins include the rightmost edge
+        #we divide trophic levels into bins
         pos_df['TrophicLevel_bin'] = (
             pd.cut(x=pos_df['TrophicLevel'], bins=trophic_levels_bins)
             .apply(lambda x: x.mid)
