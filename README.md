@@ -59,7 +59,7 @@ Citation
 
 When using foodwebviz package please cite:
 
-Łukasz Pawluczuk, Mateusz Iskrzyński (2022) Food web visualisation: heatmap, interactive graph, animated flow network. Methods in Ecology and Evolution https://doi.org/10.1111/2041-210X.13839, https://github.com/ibs-pan/foodwebviz (in production, to appear March 2022)
+Łukasz Pawluczuk, Mateusz Iskrzyński (2022) Food web visualisation: heatmap, interactive graph, animated flow network. Methods in Ecology and Evolution, 00, 1– 8. https://doi.org/10.1111/2041-210X.13839, https://github.com/ibs-pan/foodwebviz
 
 A BibTeX entry for LaTeX users:
 
