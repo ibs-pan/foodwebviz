@@ -127,7 +127,7 @@ def _get_array_order(graph, nodes, reverse=False):
 
 def draw_heatmap(food_web, boundary=False, normalization='log',
                  show_trophic_layer=True, switch_axes=False,
-                 width=1200, height=800, font_size=14):
+                 width=1200, height=800, font_size=14, save=False, output_filename='heatmap.pdf'):
     '''Visualize foodweb as a heatmap. On the interesction
     of X axis ("from" node) and Y axis ("to" node) flow weight
     is indicated.
@@ -153,6 +153,10 @@ def draw_heatmap(food_web, boundary=False, normalization='log',
         Height of the heatmap plot, large foodwebs might not fit in default height.
     font_size: int, optional (default=18)
         font size of labels
+    save: bool, optional (default=False)
+        If True, the heatmap will be saved as a PDF, SVG, PNG or JPEG according to the output_filename parameter.
+    output_filename: string, optional (default='heatmap.pdf')
+        A filename denoting the destination to write the heatmap to, in PDF, SVG, PNG or JPEG formats.
 
     Returns
     -------
@@ -221,6 +225,7 @@ def draw_heatmap(food_web, boundary=False, normalization='log',
                       )
     fig.update_xaxes(showspikes=True, spikethickness=0.5)
     fig.update_yaxes(showspikes=True, spikesnap="cursor", spikemode="across", spikethickness=0.5)
+    if save: fig.write_image(output_filename)
     return fig
 
 
