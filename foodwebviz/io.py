@@ -118,7 +118,10 @@ def read_from_SCOR(scor_path):
                         for x in lines[(i + 1) * n + i: (i + 2) * n + i]]
 
         flow_matrix = pd.DataFrame(index=range(1, n+1), columns=range(1, n+1))
-        for line in [x.split(' ') for x in lines[(i + 2) * n + i + 1: -1]]:
+        for line in [x.split(' ') for x in lines[(i + 2) * n + i + 1]]:
+            if line[0].strip() == '-1':
+                break
+
             flow_matrix.at[int(line[0]), int(line[1])] = float(line[2])
         flow_matrix = flow_matrix.fillna(0.0)
         flow_matrix.index = net.Names
