@@ -160,5 +160,5 @@ def normalization_factory(foodweb_graph_view, norm_type):
         return foodweb_graph_view
 
     if norm_type.lower() in normalization_methods:
-        return normalization_methods[norm_type](foodweb_graph_view)
+        return normalization_methods[norm_type.lower()](foodweb_graph_view)
     return foodweb_graph_view
