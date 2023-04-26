@@ -159,6 +159,6 @@ def normalization_factory(foodweb_graph_view, norm_type):
     if norm_type == 'linear':
         return foodweb_graph_view
 
-    if norm_type.lower() in normalization_methods:
+    if norm_type and norm_type.lower() in normalization_methods:
         return normalization_methods[norm_type.lower()](foodweb_graph_view)
     return foodweb_graph_view
