@@ -346,10 +346,3 @@ def read_from_CSV(filename):
     return fw.FoodWeb(title=filename.split('.csv')[0],
                       node_df=node_df.reset_index(),
                       flow_matrix=flow_matrix)
-
-
-if __name__ == '__main__':
-    f = read_from_SCOR('Alaska_Prince_William_Sound.scor')
-    write_to_SCOR(f, 'heh.scor')
-    write_to_CSV(f, 'heh.csv')
-    read_from_CSV('heh.csv')
