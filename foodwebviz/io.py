@@ -106,7 +106,7 @@ def read_from_SCOR(scor_path):
         net = pd.DataFrame(index=range(1, n+1))
         net['Names'] = lines[:n]
         net['IsAlive'] = [i < n_living for i in range(n)]
-
+        #reading vector input
         for i, col in enumerate(['Biomass', 'Import', 'Export', 'Respiration']):
             # each section should end with -1
             if lines[(i + 1) * n + i + n] != '-1':
@@ -116,12 +116,11 @@ def read_from_SCOR(scor_path):
 
             net[col] = [float(x.split(' ')[1])
                         for x in lines[(i + 1) * n + i: (i + 2) * n + i]]
-
+        #reading the edge/flow list
         flow_matrix = pd.DataFrame(index=range(1, n+1), columns=range(1, n+1))
-        for line in [x.split(' ') for x in lines[(i + 2) * n + i + 1]]:
+        for line in [x.split(' ') for x in lines[(i + 2) * n + i + 1:]]:
             if line[0].strip() == '-1':
                 break
-
             flow_matrix.at[int(line[0]), int(line[1])] = float(line[2])
         flow_matrix = flow_matrix.fillna(0.0)
         flow_matrix.index = net.Names
@@ -190,23 +189,24 @@ def write_to_SCOR(food_web, scor_path):
     --------------------
     '''
     def write_col(node_df, f, col):
-        node_df[col].to_csv(f, header=None, sep=' ', mode='a')
-        f.write('-1 \n')
+        f.writelines([f'{i} {row}\n' for i, row in node_df[col].items()]) 
+        f.write('-1\n')
 
     with open(scor_path, 'w') as f:
-        f.write(f'{food_web.title} \n')
-        f.write(f'{food_web.n} {food_web.n_living} \n')
+        f.write(f'{food_web.title}\n')
+        f.write(f'{food_web.n} {food_web.n_living}\n')
         f.writelines([f'{x}\n' for x in food_web.node_df.index])
 
         node_df = food_web.node_df.reset_index().copy()
         node_df.index = node_df.index + 1
+        n_map = node_df.reset_index().set_index('Names')[['index']].to_dict()['index']
         for col in ['Biomass', 'Import', 'Export', 'Respiration']:
             write_col(node_df, f, col)
 
-        n_map = node_df.reset_index().set_index('Names')[['index']].to_dict()['index']
         f.writelines(
             [f'{n_map[edge[0]]} {n_map[edge[1]]} {edge[2]["weight"]}\n' for edge in food_web.get_flows()])
-        f.write('-1 \n')
+        f.write('-1\n')
+        f.write('\n')
 
 
 def write_to_XLS(food_web, filename):
@@ -346,9 +346,3 @@ def read_from_CSV(filename):
     return fw.FoodWeb(title=filename.split('.csv')[0],
                       node_df=node_df.reset_index(),
                       flow_matrix=flow_matrix)
-
-
-if __name__ == '__main__':
-    f = read_from_SCOR('Alaska_Prince_William_Sound.scor')
-    write_to_CSV(f, 'heh.csv')
-    read_from_CSV('heh.csv')
