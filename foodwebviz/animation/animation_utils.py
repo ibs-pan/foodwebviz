@@ -43,7 +43,7 @@ def particles_in_one_flow(flows, x1, x2, y1, y2, start_node, max_part, map_fun):
     with s in [0,1] tracing their progress along the line
     '''
     def stretch(a, b):
-        return(np.full(int(b), a))
+        return np.full(int(b), a)
 
     lx = x2 - x1
     ly = y2 - y1
@@ -90,13 +90,13 @@ def init_particles(network_image, include_imports, include_exports, max_part, ma
             # first the system flows
             if partNumber_sys_flows.loc[i, j] != 0.0:  # we do nothing for zero flows
                 particles = particles.append(
-                     particles_in_one_flow(partNumber_sys_flows.loc[i, j], xs[i], xs[j], ys[i], ys[j],
-                                           start_node=i, max_part=max_part, map_fun=map_fun))
+                    particles_in_one_flow(partNumber_sys_flows.loc[i, j], xs[i], xs[j], ys[i], ys[j],
+                                          start_node=i, max_part=max_part, map_fun=map_fun))
 
         if include_imports:
             particles = particles.append(
-                 particles_in_one_flow(partNumber_imports.loc[i], xs[i], xs[i], 0.0, ys[i],
-                                       start_node=i, max_part=max_part, map_fun=map_fun))
+                particles_in_one_flow(partNumber_imports.loc[i], xs[i], xs[i], 0.0, ys[i],
+                                      start_node=i, max_part=max_part, map_fun=map_fun))
         if include_exports:
             particles = particles.append(
                 particles_in_one_flow(partNumber_exports.loc[i], xs[i],

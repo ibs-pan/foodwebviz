@@ -60,7 +60,7 @@ class FoodWeb(object):
     def get_diet_matrix(self):
         '''Returns a matrix of system flows express as diet proportions=
         =fraction of node inflows this flow contributes'''
-        return(self.flow_matrix.div(self.flow_matrix.sum(axis=0), axis=1).fillna(0.0))
+        return self.flow_matrix.div(self.flow_matrix.sum(axis=0), axis=1).fillna(0.0)
 
     def get_graph(self, boundary=False, mark_alive_nodes=False, normalization=None,
                   no_flows_to_detritus=False):
@@ -175,7 +175,7 @@ class FoodWeb(object):
 
     def get_norm_node_prop(self):
         num_node_prop = self.node_df[["Biomass", "Import", "Export", "Respiration"]]
-        return(num_node_prop.div(num_node_prop.sum(axis=0), axis=1))
+        return num_node_prop.div(num_node_prop.sum(axis=0), axis=1)
 
     def __str__(self):
         return f'''
@@ -190,7 +190,6 @@ class FoodWeb(object):
                 '''
 
     def get_outflows_to_living(self):
-        # node's system outflows to living 
+        # node's system outflows to living
         # TODO doc
         return self.flow_matrix[self.node_df[self.node_df.IsAlive].index].sum(axis='columns')
-

@@ -95,15 +95,14 @@ class NetworkImage(object):
         return grouped
 
     def _get_node_attributes(self, net):
-        #function sets initial node positions before an interative layout algorithm will optimise them
+        # function sets initial node positions before an interative layout algorithm will optimise them
         # node positions are based upon node properties, here on trophic levels
         pos_df = net.node_df[['TrophicLevel', 'Biomass']].reset_index().set_index('Names', drop=False).copy()
-        
 
-        #assuming 5 nodes per band on average, we get the number of bins
+        # assuming 5 nodes per band on average, we get the number of bins
         trophic_levels_bins = int(net.n / 5)+1
 
-        #we divide trophic levels into bins
+        # we divide trophic levels into bins
         pos_df['TrophicLevel_bin'] = (
             pd.cut(x=pos_df['TrophicLevel'], bins=trophic_levels_bins)
             .apply(lambda x: x.mid)
@@ -154,7 +153,7 @@ class NetworkImage(object):
         min_part_num: fixed number of particles for a minimal flow
         '''
 
-        # tu jednak trzeba zerować, a nie usuwać 
+        # tu jednak trzeba zerować, a nie usuwać
         flows = net.get_flow_matrix(boundary=False, to_alive_only=~with_detritus)
 
         # the minimal flow will correspond to a fixed number of particles
@@ -162,7 +161,7 @@ class NetworkImage(object):
         # the maximal flow will correspond to the maximum number of particles we can handle
         max_flow = flows.values[flows.values > 0].max()
 
-        calc_particle_number = lambda x: int(
+        def calc_particle_number(x): return int(
             squeeze_map(x, min_flow, max_flow, map_fun, min_part_num, max_part)) if x != 0.0 else 0
 
         return [flows.applymap(calc_particle_number),
@@ -170,13 +169,13 @@ class NetworkImage(object):
                 (net.node_df.Export + net.node_df.Respiration).apply(calc_particle_number)]
 
     def _fruchterman_reingold_layout(self, A, dim=2, k=None, pos=None, fixed=None,
-                              iterations=100, hold_dim=None, min_dist=0.01,
-                              hard_spheres=True, if_only_attraction=False):
+                                     iterations=100, hold_dim=None, min_dist=0.01,
+                                     hard_spheres=True, if_only_attraction=False):
         '''
         Position nodes in adjacency matrix A using Fruchterman-Reingold
         Entry point for NetworkX graph is fruchterman_reingold_layout()
 
-        Following by Marscher, adapted from NetworkX pyemma/plots/_ext/fruchterman_reingold.py  
+        Following by Marscher, adapted from NetworkX pyemma/plots/_ext/fruchterman_reingold.py
         https://github.com/markovmodel/PyEMMA/blob/58825588431020d7e2a2ea57a941abc86647fc0e/pyemma/plots/_ext/fruchterman_reingold.py
         '''
 
@@ -273,7 +272,8 @@ class NetworkImage(object):
     def _get_num_of_crossed_edges(self, net, positions):
         '''
         returns the approximate number of crossing between edges given the positions of their ends
-        approximate in order not to solve line equation -> but this does not have to prolong evaluation time greatly
+        approximate in order not to solve line equation -> but this does not have to prolong
+        evaluation time greatly
         '''
         edges = net.get_flows(boundary=False,
                               mark_alive_nodes=False,
@@ -349,10 +349,10 @@ def is_intersect(pair):
 
 
 if __name__ == "__main__":
-        import foodwebviz as fw
+    import foodwebviz as fw
 
-        scor_file_in = 'Alaska_Prince_William_Sound.scor'  # 'atlss_cypress_wet.dat'
+    scor_file_in = 'Alaska_Prince_William_Sound.scor'  # 'atlss_cypress_wet.dat'
 
-        foodweb = fw.read_from_SCOR(scor_file_in)
-        netIm = NetworkImage(foodweb, False, k_=80, min_part_num=1, map_fun=np.sqrt, max_part=20)
-        print(netIm.nodes)
+    foodweb = fw.read_from_SCOR(scor_file_in)
+    netIm = NetworkImage(foodweb, False, k_=80, min_part_num=1, map_fun=np.sqrt, max_part=20)
+    print(netIm.nodes)
