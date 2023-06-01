@@ -24,7 +24,7 @@ __all__ = [
 
 def read_from_SCOR(scor_path):
     '''Reads a TXT file in the SCOR format and returns a FoodWeb object.
-    
+
     Parameters
     ----------
     scor_path : string
@@ -34,11 +34,11 @@ def read_from_SCOR(scor_path):
     Returns
     -------
     foodweb : foodwebs.Foodweb
-    
+
     Description
     -------
 
-    The SCOR format defines the graph through a list of edges (flows) and contains other food web data. 
+    The SCOR format defines the graph through a list of edges (flows) and contains other food web data.
     Files in SCOR format look as follows (see examples/data/Richards_Bay_C_Summer.scor):
     --------------------
     title
@@ -56,7 +56,7 @@ def read_from_SCOR(scor_path):
     -1
     respirations (same format as biomasses)
     -1
-    flows (in rows, e.g. '1 2 flow_from_1_to_2') 
+    flows (in rows, e.g. '1 2 flow_from_1_to_2')
     -1
     --------------------
 
@@ -71,18 +71,18 @@ def read_from_SCOR(scor_path):
     -1
     1 0.0018666315
     2 0.0
-    -1 
+    -1
     1 3.35565e-07
     2 0.0001
-    -1 
+    -1
     1 0.09925068
     2 1.45600009
-    -1 
+    -1
     1 2 0.002519108
     -1
     --------------------
 
-    
+
     '''
     with open(scor_path, 'r', encoding='utf-8') as f:
         print(f'Reading file: {scor_path}')
@@ -106,7 +106,7 @@ def read_from_SCOR(scor_path):
         net = pd.DataFrame(index=range(1, n+1))
         net['Names'] = lines[:n]
         net['IsAlive'] = [i < n_living for i in range(n)]
-        #reading vector input
+        # reading vector input
         for i, col in enumerate(['Biomass', 'Import', 'Export', 'Respiration']):
             # each section should end with -1
             if lines[(i + 1) * n + i + n] != '-1':
@@ -116,7 +116,7 @@ def read_from_SCOR(scor_path):
 
             net[col] = [float(x.split(' ')[1])
                         for x in lines[(i + 1) * n + i: (i + 2) * n + i]]
-        #reading the edge/flow list
+        # reading the edge/flow list
         flow_matrix = pd.DataFrame(index=range(1, n+1), columns=range(1, n+1))
         for line in [x.split(' ') for x in lines[(i + 2) * n + i + 1:]]:
             if line[0].strip() == '-1':
@@ -141,10 +141,10 @@ def write_to_SCOR(food_web, scor_path):
     See Also
     --------
     io.read_from_SCOR
-    
+
     Description
     --------
-    SCOR format defines the graph through a list of edges (flows) and contains other food web data. 
+    SCOR format defines the graph through a list of edges (flows) and contains other food web data.
     Files in SCOR format look as follows:
     --------------------
     title
@@ -162,7 +162,7 @@ def write_to_SCOR(food_web, scor_path):
     -1
     respirations (same format as biomasses)
     -1
-    flows (in rows, e.g. '1 2 flow_from_1_to_2') 
+    flows (in rows, e.g. '1 2 flow_from_1_to_2')
     -1
     --------------------
 
@@ -177,19 +177,19 @@ def write_to_SCOR(food_web, scor_path):
     -1
     1 0.0018666315
     2 0.0
-    -1 
+    -1
     1 3.35565e-07
     2 0.0001
-    -1 
+    -1
     1 0.09925068
     2 1.45600009
-    -1 
+    -1
     1 2 0.002519108
     -1
     --------------------
     '''
     def write_col(node_df, f, col):
-        f.writelines([f'{i} {row}\n' for i, row in node_df[col].items()]) 
+        f.writelines([f'{i} {row}\n' for i, row in node_df[col].items()])
         f.write('-1\n')
 
     with open(scor_path, 'w') as f:
@@ -235,20 +235,20 @@ def read_from_XLS(filename):
         Object to save.
     filename: string
         Destination path.
-        
+
     Description
     ----------
-    The XLS file consists of three sheets: 
+    The XLS file consists of three sheets:
         'Title':
             containing the name of the food web
         'Node properties':
-            with a table describing nodes through the following columns: 
+            with a table describing nodes through the following columns:
             'Names', 'IsAlive', 'Biomass', 'Import', 'Export', 'Respiration', 'TrophicLevel'
         'Internal flows':
-            with a table describing flows between the nodes in the system; 
+            with a table describing flows between the nodes in the system;
             the first row and the first column contain node names;
             table elements contain flow values from the node in the row to the node in the column.
-     
+
     '''
     title = pd.read_excel(filename, sheet_name='Title')
     node_df = pd.read_excel(filename, sheet_name='Node properties',
@@ -295,23 +295,24 @@ def read_from_CSV(filename):
 
     Parameters
     ----------
-    
+
     filename: string
-        Path to the CSV file. The expected format of a semicolon-separated file (see examples/data/Richards_Bay_C_Summer):
-                Node 1;      Node 2;      ... Node N;      IsAlive; Biomass;   Export;	 Respiration 
+        Path to the CSV file. The expected format of a semicolon-separated file
+        (see examples/data/Richards_Bay_C_Summer):
+                Node 1;      Node 2;      ... Node N;      IsAlive; Biomass;   Export;	 Respiration
         Node 1; flow_1_to_1; flow_1_to_2; ... flow_1_to_N; 1;       biomass_1; export_1; Respiration_1
         Node 2; ...
         ...
         Node N; ...
         Import; import_1; ...
-        
-        The field IsAlive is 1 for living and 0 for non-living(detrital) nodes. 
+
+        The field IsAlive is 1 for living and 0 for non-living(detrital) nodes.
         Import, Export and Respiration encode the respective flows crossing the ecosystem boundary.
-        
+
     Returns
     -------
     foodwebs.FoodWeb object
-                
+
     '''
     data = pd.read_csv(filename, sep=';', encoding='utf-8').set_index('Names')
 

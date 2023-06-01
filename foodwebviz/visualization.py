@@ -85,7 +85,7 @@ def _get_trophic_layer(graph, from_nodes, to_nodes):
         ygap=0.2,
         zmin=min(z),
         zmax=max(z) + 3,
-        colorscale=TROPHIC_LAYER_COLORS, #same as cmap='fw_blue'
+        colorscale=TROPHIC_LAYER_COLORS,  # same as cmap='fw_blue'
         name='Trophic Layer',
         hoverinfo='skip'
     )
@@ -154,7 +154,8 @@ def draw_heatmap(food_web, boundary=False, normalization='log',
     font_size: int, optional (default=18)
         font size of labels
     save: bool, optional (default=False)
-        If True, the heatmap will be saved as a PDF, SVG, PNG or JPEG according to the output_filename parameter.
+        If True, the heatmap will be saved as a PDF, SVG, PNG or JPEG
+        according to the output_filename parameter.
     output_filename: string, optional (default='heatmap.pdf')
         A filename denoting the destination to write the heatmap to, in PDF, SVG, PNG or JPEG formats.
 
@@ -192,12 +193,11 @@ def draw_heatmap(food_web, boundary=False, normalization='log',
         hovertemplate='%{y} --> %{x}: %{z:.3f}<extra></extra>'
     )
 
-
     # fix color bar for log normalization
     if normalization == 'log':
         z_orginal = [x[2]['weight'] for x in food_web.get_graph(
             boundary, mark_alive_nodes=True, normalization='linear').edges(data=True)]
- 
+
         heatmap.colorbar = _get_log_colorbar(z_orginal)
         heatmap.customdata = z_orginal
         if switch_axes:
@@ -207,29 +207,35 @@ def draw_heatmap(food_web, boundary=False, normalization='log',
         heatmap.hovertemplate = hovertemplate
 
     fig.add_trace(heatmap)
-    fig.update_layout(#title=_get_title(food_web),
-                      width=width,
-                      height=height,
-                      autosize=True,
-                      yaxis={'categoryarray': _get_array_order(graph, from_nodes),
-                             'title': 'From' if not switch_axes else 'To'},
-                      xaxis={'categoryarray': _get_array_order(graph, to_nodes, True),
-                             'title': 'To' if not switch_axes else 'From'},
-                      legend=dict(
-                          orientation="h",
-                          yanchor="bottom",
-                          xanchor="right",
-                          x=1,
-                          y=1),
-                      font={'size': font_size}
-                      )
+    fig.update_layout(  # title=_get_title(food_web),
+        width=width,
+        height=height,
+        autosize=True,
+        yaxis={'categoryarray': _get_array_order(graph, from_nodes),
+               'title': 'From' if not switch_axes else 'To'},
+        xaxis={'categoryarray': _get_array_order(graph, to_nodes, True),
+               'title': 'To' if not switch_axes else 'From'},
+        legend=dict(
+            orientation="h",
+            yanchor="bottom",
+            xanchor="right",
+            x=1,
+            y=1),
+        font={'size': font_size}
+    )
     fig.update_xaxes(showspikes=True, spikethickness=0.5)
     fig.update_yaxes(showspikes=True, spikesnap="cursor", spikemode="across", spikethickness=0.5)
-    if save: fig.write_image(output_filename)
+    if save:
+        fig.write_image(output_filename)
     return fig
 
 
-def draw_trophic_flows_heatmap(food_web, switch_axes=False, log_scale=False, width=1200, height=800, font_size=24):
+def draw_trophic_flows_heatmap(food_web,
+                               switch_axes=False,
+                               log_scale=False,
+                               width=1200,
+                               height=800,
+                               font_size=24):
     '''Visualize flows between foodweb's trophic levels as a heatmap.
     The color at (x,y) represents the sum of flows from trophic level x to
     trophic level y.
@@ -279,18 +285,18 @@ def draw_trophic_flows_heatmap(food_web, switch_axes=False, log_scale=False, wid
         heatmap.hovertemplate = hovertemplate
 
     fig = go.Figure(data=heatmap)
-    fig.update_layout(#title=_get_title(food_web),
-                      width=width,
-                      height=height,
-                      autosize=True,
-                      xaxis_showgrid=False,
-                      yaxis_showgrid=False,
-                      yaxis={'title': 'Trophic Layer From'if not switch_axes else 'Trophic Layer To',
-                             'dtick': 1},
-                      xaxis={'title': 'Trophic Layer To' if not switch_axes else 'Trophic Layer From',
-                             'dtick': 1},
-                      font={'size': font_size}
-                      )
+    fig.update_layout(  # title=_get_title(food_web),
+        width=width,
+        height=height,
+        autosize=True,
+        xaxis_showgrid=False,
+        yaxis_showgrid=False,
+        yaxis={'title': 'Trophic Layer From'if not switch_axes else 'Trophic Layer To',
+               'dtick': 1},
+        xaxis={'title': 'Trophic Layer To' if not switch_axes else 'Trophic Layer From',
+               'dtick': 1},
+        font={'size': font_size}
+    )
     return fig
 
 
@@ -324,7 +330,7 @@ def draw_trophic_flows_distribution(food_web, normalize=True, width=1000, height
                  x="weights" if not normalize else "percentage",
                  color="to",
                  color_discrete_sequence=[x[1] for x in TROPHIC_LAYER_COLORS[1:]],
-                 #title=_get_title(food_web),
+                 # title=_get_title(food_web),
                  height=height,
                  width=width,
                  template="simple_white",
@@ -372,8 +378,9 @@ def draw_network_for_nodes(food_web,
     no_flows_to_detritus : bool, optional (default=True)
         True if only flows to living nodes should be drawn
     cmap : str (default='viridis')
-        Color map representing trophic level as node colour. 
-        One of named matplotlib continuous color maps: https://matplotlib.org/stable/tutorials/colors/colormaps.html
+        Color map representing trophic level as node colour.
+        One of named matplotlib continuous color maps:
+        https://matplotlib.org/stable/tutorials/colors/colormaps.html
 
     Returns
     -------

@@ -18,7 +18,7 @@ __all__ = [
 
 
 def _run_animation(filename, func, frames, interval, fig=None, figsize=(6.5, 6.5), fps=None, dpi=None):
-    """ Creates an animated GIF of a matplotlib.
+    r""" Creates an animated GIF of a matplotlib.
 
     Parameters
     ----------

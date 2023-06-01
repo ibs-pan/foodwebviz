@@ -15,7 +15,7 @@ import click
 import foodwebviz as fw
 
 
-@click.command('Simple script that generates plots for all foodwebs from given directory (containing SCOR files).')
+@click.command('Generates plots for all foodwebs from given directory (containing SCOR files).')
 @click.option('--scor_dir', help='Directory with SCOR files.')
 @click.option('--output', help='Directory where plots should be saved.', default='.')
 @click.option('--boundary', default=False, is_flag=True, help='Wheter to show boundary flows.')
@@ -24,7 +24,7 @@ import foodwebviz as fw
 @click.option('--normalization', default=None, type=click.Choice(['log', 'diet', 'biomass', 'tst']),
               help='Normalization method.')
 def draw_heatmaps(scor_dir, output, boundary, show_trophic_layer, switch_axes, normalization):
-    '''Simple script that generates plots for all foodwebs from given directory (containing SCOR files).
+    '''Generates plots for all foodwebs from given directory (containing SCOR files).
 
     For each foodweb in directory the following files will created:
 

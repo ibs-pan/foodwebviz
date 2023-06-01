@@ -4,14 +4,12 @@ foodwebviz
 foodwebviz is a Python package for the analysis and visualization of throphic networks.
 """
 
+# Import foodwebviz objects
+from foodwebviz.io import *   # noqa: F401,F403
+from foodwebviz.utils import *   # noqa: F401,F403
+from foodwebviz.visualization import *   # noqa: F401,F403
+from foodwebviz.foodweb import *   # noqa: F401,F403
+from foodwebviz.create_animated_food_web import *   # noqa: F401,F403
+
+
 __version__ = "0.1"
-
-from foodwebviz.io import *
-
-from foodwebviz.utils import *
-
-from foodwebviz.visualization import *
-
-from foodwebviz.foodweb import *
-
-from foodwebviz.create_animated_food_web import *
