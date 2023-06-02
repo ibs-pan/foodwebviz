@@ -1,6 +1,12 @@
 '''Foodweb's utils methods.'''
+from __future__ import annotations
+from typing import Callable, Union, Any, TYPE_CHECKING
+
 import numpy as np
 import pandas as pd
+
+if TYPE_CHECKING:
+    import foodwebviz as fw
 
 
 __all__ = [
@@ -13,7 +19,12 @@ __all__ = [
 NOT_ALIVE_MARK = '\u2717'
 
 
-def squeeze_map(x, min_x, max_x, map_fun, min_out, max_out):
+def squeeze_map(x: float,
+                min_x: float,
+                max_x: float,
+                map_fun: Callable[[float], float],
+                min_out: int,
+                max_out: int) -> float:
     '''
     we map the interval [min_x, max_x] into [min_out, max_out] so that
     the points are squeezed using the function map_fun
@@ -32,7 +43,8 @@ def squeeze_map(x, min_x, max_x, map_fun, min_out, max_out):
     return min_out + (max_out - min_out) * map_fun(x / min_x) / map_fun(max_x / min_x)
 
 
-def calculate_trophic_levels(food_web):
+def calculate_trophic_levels(food_web: fw.FoodWeb
+                             ) -> Union[pd.api.extensions.ExtensionArray, np.ndarray[Any, Any]]:
     '''Calculate the fractional trophic levels of nodes using their the recursive
     relation. This implementation uses diet matrix to improve the numerical
     behavior of computation.
@@ -61,30 +73,35 @@ def calculate_trophic_levels(food_web):
 
     tl = pd.DataFrame(food_web.flow_matrix.sum(axis=0), columns=['inflow'])
     # here we identify nodes at trophic level 1
-    tl['is_fixed_to_one'] = (tl.inflow <= 0.0) | (np.arange(data_size) >= food_web.n_living)
+    tl['is_fixed_to_one'] = (tl.inflow <= 0.0) | (
+        np.arange(data_size) >= food_web.n_living)
     tl['data_trophic_level'] = tl.is_fixed_to_one.astype(float)
 
     # counting the nodes with TL fixed to 1
     if (sum(tl.is_fixed_to_one) != 0):
         # update the equation due to the prescribed trophic level 1 - reduce the dimension of the matrix
         A_tmp = A.loc[~tl['is_fixed_to_one'], ~tl['is_fixed_to_one']]
-        A_tmp = A_tmp*-1 + pd.DataFrame(np.identity(len(A_tmp)), index=A_tmp.index, columns=A_tmp.columns)
+        A_tmp = A_tmp*-1 + \
+            pd.DataFrame(np.identity(len(A_tmp)),
+                         index=A_tmp.index, columns=A_tmp.columns)
 
         B = pd.DataFrame(tl[~tl.is_fixed_to_one].is_fixed_to_one.copy())
         # filling the constants vector with ones - the constant 1 contribution
         B['b'] = 1
         # this is the diet fraction from non-living denoted as b in the function description
-        B['b'] = B['b'] + A.loc[~tl['is_fixed_to_one'], tl['is_fixed_to_one']].sum(axis=1)
+        B['b'] = B['b'] + A.loc[~tl['is_fixed_to_one'],
+                                tl['is_fixed_to_one']].sum(axis=1)
 
         A_inverse = np.linalg.pinv(A_tmp)
-        tl.loc[~tl['is_fixed_to_one'], 'data_trophic_level'] = np.dot(A_inverse, B['b'])
+        tl.loc[~tl['is_fixed_to_one'], 'data_trophic_level'] = np.dot(
+            A_inverse, B['b'])
     else:
         # fails with negative trophic levels = some problems
         np.linalg.pinv(A)
     return tl.data_trophic_level.values
 
 
-def is_alive_mapping(food_web):
+def is_alive_mapping(food_web: fw.FoodWeb) -> dict[str, str]:
     '''Creates dictionary which special X mark to names, which are not alive.
 
     Parameters

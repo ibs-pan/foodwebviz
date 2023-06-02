@@ -13,7 +13,7 @@ __all__ = [
 ]
 
 
-def diet_normalization(foodweb_graph_view):
+def diet_normalization(foodweb_graph_view: nx.Graph) -> nx.Graph:
     '''In this normalization method, each weight is divided by node's diet.
     Diet is sum of all input weights, inlcuding external import.
 
@@ -36,7 +36,7 @@ def diet_normalization(foodweb_graph_view):
     return foodweb_graph_view
 
 
-def log_normalization(foodweb_graph_view):
+def log_normalization(foodweb_graph_view: nx.Graph) -> nx.Graph:
     '''Normalized weigth is a logarithm of original weight.
 
     Parameters
@@ -54,7 +54,7 @@ def log_normalization(foodweb_graph_view):
     return foodweb_graph_view
 
 
-def donor_control_normalization(foodweb_graph_view):
+def donor_control_normalization(foodweb_graph_view: nx.Graph) -> nx.Graph:
     '''Each weight is divided by biomass of the "from" node.
 
     Parameters
@@ -73,7 +73,7 @@ def donor_control_normalization(foodweb_graph_view):
     return foodweb_graph_view
 
 
-def predator_control_normalization(foodweb_graph_view):
+def predator_control_normalization(foodweb_graph_view: nx.Graph) -> nx.Graph:
     '''Each weight is divided by biomass of the "to" node.
 
     Parameters
@@ -92,7 +92,7 @@ def predator_control_normalization(foodweb_graph_view):
     return foodweb_graph_view
 
 
-def mixed_control_normalization(foodweb_graph_view):
+def mixed_control_normalization(foodweb_graph_view: nx.Graph) -> nx.Graph:
     '''Each weight is equal to donor_control * predator_control.
 
     Parameters
@@ -112,7 +112,7 @@ def mixed_control_normalization(foodweb_graph_view):
     return foodweb_graph_view
 
 
-def tst_normalization(foodweb_graph_view):
+def tst_normalization(foodweb_graph_view: nx.Graph) -> nx.Graph:
     '''Function returning a list of internal flows normalized to TST.
 
     Parameters
@@ -131,7 +131,7 @@ def tst_normalization(foodweb_graph_view):
     return foodweb_graph_view
 
 
-def normalization_factory(foodweb_graph_view, norm_type):
+def normalization_factory(foodweb_graph_view: nx.Graph, norm_type: str) -> nx.Graph:
     '''Applies apropiate normalization method according to norm_type argument.
 
     Parameters

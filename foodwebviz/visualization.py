@@ -1,4 +1,6 @@
 '''Foodweb's visualization methods.'''
+from __future__ import annotations
+
 import decimal
 import numpy as np
 import pandas as pd
@@ -10,6 +12,7 @@ import plotly.express as px
 from matplotlib import pyplot as plt
 from pyvis.network import Network
 from collections import defaultdict
+from typing import Any, Union, Optional
 import foodwebviz as fw
 
 __all__ = [
@@ -39,12 +42,13 @@ HEATMAP_COLORS = [
 ]
 
 
-def _get_title(food_web, limit=150):
+def _get_title(food_web: fw.FoodWeb, limit: int = 150) -> str:
     return food_web.title if len(food_web.title) <= limit else food_web.title[:limit] + '...'
 
 
-def _get_log_colorbar(z_orginal):
-    tickvals = range(int(np.log10(min(z_orginal))) + 1, int(np.log10(max(z_orginal))) + 1)
+def _get_log_colorbar(z_orginal: Union[pd.Series[Any], list[Any]]) -> dict:
+    tickvals = range(int(np.log10(min(z_orginal))) + 1,
+                     int(np.log10(max(z_orginal))) + 1)
 
     return dict(
         tick0=0,
@@ -54,7 +58,7 @@ def _get_log_colorbar(z_orginal):
     )
 
 
-def _get_trophic_layer(graph, from_nodes, to_nodes):
+def _get_trophic_layer(graph: nx.SubGraph, from_nodes: list[str], to_nodes: list[str]) -> go.Heatmap:
     '''Creates Trace for Heatmap to show thropic levels of X axis nodes.
 
     Parameters
@@ -72,7 +76,8 @@ def _get_trophic_layer(graph, from_nodes, to_nodes):
     '''
     trophic_flows = []
     for n in set(from_nodes):
-        trophic_flows.extend([(n, m, graph.nodes(data='TrophicLevel', default=0)[n]) for m in set(to_nodes)])
+        trophic_flows.extend(
+            [(n, m, graph.nodes(data='TrophicLevel', default=0)[n]) for m in set(to_nodes)])
 
     fr, to, z = list(zip(*trophic_flows))
     return go.Heatmap(
@@ -91,7 +96,7 @@ def _get_trophic_layer(graph, from_nodes, to_nodes):
     )
 
 
-def _get_trophic_flows(food_web):
+def _get_trophic_flows(food_web: fw.FoodWeb) -> pd.DataFrame:
     '''For each pair of trophic levels assigns sum of all nodes' weights in that pair.
 
     Parameters
@@ -108,26 +113,38 @@ def _get_trophic_flows(food_web):
     trophic_flows : pd.DataFrame
         Columns: ["from", "to", "wegiths"], where "from" and "to" are trophic levels.
     '''
-    graph = food_web.get_graph(False, mark_alive_nodes=False, normalization='linear')
+    graph = food_web.get_graph(
+        False, mark_alive_nodes=False, normalization='linear')
 
-    trophic_flows = defaultdict(float)
-    trophic_levels = {node: level for node, level in graph.nodes(data='TrophicLevel')}
+    trophic_flows: defaultdict = defaultdict(float)
+    trophic_levels = {node: level for node,
+                      level in graph.nodes(data='TrophicLevel')}
     for edge in graph.edges(data=True):
-        trophic_from = decimal.Decimal(trophic_levels[edge[0]]).to_integral_value()
-        trophic_to = decimal.Decimal(trophic_levels[edge[1]]).to_integral_value()
+        trophic_from = decimal.Decimal(
+            trophic_levels[edge[0]]).to_integral_value()
+        trophic_to = decimal.Decimal(
+            trophic_levels[edge[1]]).to_integral_value()
         trophic_flows[(trophic_from, trophic_to)] += edge[2]['weight']
 
     return pd.DataFrame([(x, y, w) for (x, y), w in trophic_flows.items()], columns=['from', 'to', 'weights'])
 
 
-def _get_array_order(graph, nodes, reverse=False):
-    def sort_key(x): return (x[1].get('TrophicLevel', 0), x[1].get('IsAlive', 0))
+def _get_array_order(graph: nx.SubGraph, nodes: list[str], reverse: bool = False) -> list[str]:
+    def sort_key(x): return (
+        x[1].get('TrophicLevel', 0), x[1].get('IsAlive', 0))
     return [x[0] for x in sorted(graph.nodes(data=True), key=sort_key, reverse=reverse) if x[0] in nodes]
 
 
-def draw_heatmap(food_web, boundary=False, normalization='log',
-                 show_trophic_layer=True, switch_axes=False,
-                 width=1200, height=800, font_size=14, save=False, output_filename='heatmap.pdf'):
+def draw_heatmap(food_web: fw.FoodWeb,
+                 boundary: bool = False,
+                 normalization: str = 'log',
+                 show_trophic_layer: bool = True,
+                 switch_axes: bool = False,
+                 width: int = 1200,
+                 height: int = 800,
+                 font_size: int = 14,
+                 save: bool = False,
+                 output_filename: str = 'heatmap.pdf') -> go.Heatmap:
     '''Visualize foodweb as a heatmap. On the interesction
     of X axis ("from" node) and Y axis ("to" node) flow weight
     is indicated.
@@ -164,7 +181,8 @@ def draw_heatmap(food_web, boundary=False, normalization='log',
     heatmap : plotly.graph_objects.Figure
     '''
 
-    graph = food_web.get_graph(boundary, mark_alive_nodes=True, normalization=normalization)
+    graph = food_web.get_graph(
+        boundary, mark_alive_nodes=True, normalization=normalization)
     if switch_axes:
         to_nodes, from_nodes, z = list(zip(*graph.edges(data=True)))
         hovertemplate = '%{x} --> %{y}: %{z:.3f}<extra></extra>'
@@ -224,18 +242,19 @@ def draw_heatmap(food_web, boundary=False, normalization='log',
         font={'size': font_size}
     )
     fig.update_xaxes(showspikes=True, spikethickness=0.5)
-    fig.update_yaxes(showspikes=True, spikesnap="cursor", spikemode="across", spikethickness=0.5)
+    fig.update_yaxes(showspikes=True, spikesnap="cursor",
+                     spikemode="across", spikethickness=0.5)
     if save:
         fig.write_image(output_filename)
     return fig
 
 
-def draw_trophic_flows_heatmap(food_web,
-                               switch_axes=False,
-                               log_scale=False,
-                               width=1200,
-                               height=800,
-                               font_size=24):
+def draw_trophic_flows_heatmap(food_web: fw.FoodWeb,
+                               switch_axes: bool = False,
+                               log_scale: bool = False,
+                               width: int = 1200,
+                               height: int = 800,
+                               font_size: int = 24) -> go.Figure:
     '''Visualize flows between foodweb's trophic levels as a heatmap.
     The color at (x,y) represents the sum of flows from trophic level x to
     trophic level y.
@@ -267,7 +286,8 @@ def draw_trophic_flows_heatmap(food_web,
     tf_pd = _get_trophic_flows(food_web)
     heatmap = go.Heatmap(x=tf_pd['to' if not switch_axes else 'from'],
                          y=tf_pd['from' if not switch_axes else 'to'],
-                         z=np.log10(tf_pd.weights) if log_scale else tf_pd.weights,
+                         z=np.log10(
+                             tf_pd.weights) if log_scale else tf_pd.weights,
                          xgap=0.2,
                          ygap=0.2,
                          colorscale=HEATMAP_COLORS,
@@ -300,7 +320,11 @@ def draw_trophic_flows_heatmap(food_web,
     return fig
 
 
-def draw_trophic_flows_distribution(food_web, normalize=True, width=1000, height=800, font_size=24):
+def draw_trophic_flows_distribution(food_web: fw.FoodWeb,
+                                    normalize: bool = True,
+                                    width: int = 1000,
+                                    height: int = 800,
+                                    font_size: int = 24) -> go.Figure:
     '''Visualize flows between trophic levels as a stacked bar chart.
 
     Parameters
@@ -323,13 +347,15 @@ def draw_trophic_flows_distribution(food_web, normalize=True, width=1000, height
     tf_pd = tf_pd.sort_values('to')
 
     if normalize:
-        tf_pd['percentage'] = tf_pd['weights'] / tf_pd.groupby('from')['weights'].transform('sum') * 100
+        tf_pd['percentage'] = tf_pd['weights'] / \
+            tf_pd.groupby('from')['weights'].transform('sum') * 100
 
     fig = px.bar(tf_pd,
                  y="from",
                  x="weights" if not normalize else "percentage",
                  color="to",
-                 color_discrete_sequence=[x[1] for x in TROPHIC_LAYER_COLORS[1:]],
+                 color_discrete_sequence=[x[1]
+                                          for x in TROPHIC_LAYER_COLORS[1:]],
                  # title=_get_title(food_web),
                  height=height,
                  width=width,
@@ -346,15 +372,15 @@ def draw_trophic_flows_distribution(food_web, normalize=True, width=1000, height
     return fig
 
 
-def draw_network_for_nodes(food_web,
-                           nodes=None,
-                           file_name='interactive_food_web_graph.html',
-                           notebook=True,
-                           height="800px",
-                           width="100%",
-                           no_flows_to_detritus=True,
-                           cmap='viridis',
-                           **kwargs):
+def draw_network_for_nodes(food_web: fw.FoodWeb,
+                           nodes: Optional[list[str]] = None,
+                           file_name: str = 'interactive_food_web_graph.html',
+                           notebook: bool = True,
+                           height: str = "800px",
+                           width: str = "100%",
+                           no_flows_to_detritus: bool = True,
+                           cmap: str = 'viridis',
+                           **kwargs) -> Network:
     '''Visualize subgraph of foodweb as a network.
     Parameters notebook, height, and width refer to initialization parameters of pyvis.network.Network.
     Additional parameters may be passed to hierachical repulsion layout as defined in
@@ -393,13 +419,20 @@ def draw_network_for_nodes(food_web,
                  layout=True,
                  font_color='white',
                  heading='')  # food_web.title)
-    g = food_web.get_graph(mark_alive_nodes=True, no_flows_to_detritus=no_flows_to_detritus).copy()
+    g = food_web.get_graph(mark_alive_nodes=True,
+                           no_flows_to_detritus=no_flows_to_detritus).copy()
 
     if not nodes:
         nodes = g.nodes()
 
-    g = g.edge_subgraph([(x[0], x[1]) for x in g.edges() if x[0].replace(
-        f'{fw.NOT_ALIVE_MARK} ', '') in nodes or x[1].replace(f'{fw.NOT_ALIVE_MARK} ', '') in nodes])
+    edges = []
+    for x in g.edges():
+        from_node = x[0].replace(f'{fw.NOT_ALIVE_MARK} ', '')
+        to_node =  x[1].replace(f'{fw.NOT_ALIVE_MARK} ', '')
+        if from_node in nodes or to_node in nodes:  # type: ignore
+            edges.append((x[0], x[1]))
+
+    g = g.edge_subgraph(edges)
 
     colors = plt.cm.get_cmap(cmap)
     norm = matplotlib.colors.Normalize(vmin=food_web.node_df.TrophicLevel.min(),
@@ -416,7 +449,8 @@ def draw_network_for_nodes(food_web,
     nx.set_node_attributes(g, a)
 
     # rename weight attribute to value
-    nx.set_edge_attributes(g, {(edge[0], edge[1]): edge[2] for edge in g.edges(data='weight')}, 'value')
+    nx.set_edge_attributes(g, {(edge[0], edge[1]): edge[2]
+                           for edge in g.edges(data='weight')}, 'value')
 
     nt.from_nx(g)
     nt.hrepulsion(node_distance=220, **kwargs)

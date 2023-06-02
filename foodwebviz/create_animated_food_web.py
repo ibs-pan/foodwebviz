@@ -4,20 +4,33 @@ Created on Tue Feb 23 12:14:50 2021
 The master functions for animation.
 @author: Mateusz
 """
+from __future__ import annotations
+
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib import animation
+from typing import Callable, Optional, TYPE_CHECKING
 
 from foodwebviz.animation.network_image import NetworkImage
 from foodwebviz.animation import animation_utils
 
+if TYPE_CHECKING:
+    import foodwebviz as fw
+
 
 __all__ = [
-    'animate_foodweb',
+    'animate_foodweb'
 ]
 
 
-def _run_animation(filename, func, frames, interval, fig=None, figsize=(6.5, 6.5), fps=None, dpi=None):
+def _run_animation(filename: str,
+                   func: Callable[[int], None],
+                   frames: int,
+                   interval: float,
+                   fig: Optional[tuple[float, float]] = None,
+                   figsize: tuple[float, float] = (6.5, 6.5),
+                   fps: Optional[int] = None,
+                   dpi: Optional[float] = None) -> None:
     r""" Creates an animated GIF of a matplotlib.
 
     Parameters
@@ -53,16 +66,26 @@ def _run_animation(filename, func, frames, interval, fig=None, figsize=(6.5, 6.5
     if fig is None:
         fig = plt.figure(figsize=figsize)
 
-    forward.first = True
-    anim = animation.FuncAnimation(fig, forward, frames=frames, interval=interval)
+    forward.first = True  # type: ignore
+    anim = animation.FuncAnimation(
+        fig, forward, frames=frames, interval=interval)
     anim.save(filename, writer='imagemagick', fps=fps, dpi=dpi)
 
 
-def animate_foodweb(foodweb, gif_file_out, fps=10, anim_len=1, trails=1,
-                    min_node_radius=0.5, min_part_num=1,
-                    max_part_num=20, map_fun=np.sqrt, include_imports=True, include_exports=False,
-                    cmap=plt.cm.get_cmap('viridis'), max_luminance=0.85,
-                    particle_size=8):
+def animate_foodweb(foodweb: fw.FoodWeb,
+                    gif_file_out: str,
+                    fps: int = 10,
+                    anim_len: int = 1,
+                    trails: int = 1,
+                    min_node_radius: float = 0.5,
+                    min_part_num: int = 1,
+                    max_part_num: int = 20,
+                    map_fun: Callable = np.sqrt,
+                    include_imports: bool = True,
+                    include_exports: bool = False,
+                    cmap: plt.Colormap = plt.cm.get_cmap('viridis'),
+                    max_luminance: float = 0.85,
+                    particle_size: int = 8) -> None:
     '''foodweb_animation creates a GIF animation saved as gif_file_out based on the food web
         provided as a SCOR file scor_file_in. The canvas size in units relevant
         to further parameters is [0,100]x[0,100].
@@ -139,5 +162,6 @@ def animate_foodweb(foodweb, gif_file_out, fps=10, anim_len=1, trails=1,
                    frames=fps * anim_len,  # number of frames,
                    interval=interval,
                    figsize=(20, 20),
-                   dpi=100 + 1.75 * len(network_image.nodes),  # adapt the resolution to the number of nodes
+                   # adapt the resolution to the number of nodes
+                   dpi=100 + 1.75 * len(network_image.nodes),
                    fps=fps)
