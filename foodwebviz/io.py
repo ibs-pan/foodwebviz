@@ -6,6 +6,7 @@ Examples
 Create a foodweb from a SCOR file
 >>> food_web = read_from_SCOR(file_path)
 '''
+from __future__ import annotations
 
 import numpy as np
 import pandas as pd
@@ -22,14 +23,13 @@ __all__ = [
 ]
 
 
-def read_from_SCOR(scor_path):
+def read_from_SCOR(scor_path: str) -> fw.FoodWeb:
     '''Reads a TXT file in the SCOR format and returns a FoodWeb object.
 
     Parameters
     ----------
     scor_path : string
         Path to the foodweb in SCOR format.
-
 
     Returns
     -------
@@ -81,8 +81,6 @@ def read_from_SCOR(scor_path):
     1 2 0.002519108
     -1
     --------------------
-
-
     '''
     with open(scor_path, 'r', encoding='utf-8') as f:
         print(f'Reading file: {scor_path}')
@@ -123,12 +121,12 @@ def read_from_SCOR(scor_path):
                 break
             flow_matrix.at[int(line[0]), int(line[1])] = float(line[2])
         flow_matrix = flow_matrix.fillna(0.0)
-        flow_matrix.index = net.Names
-        flow_matrix.columns = net.Names
+        flow_matrix.index = net.Names  # type: ignore
+        flow_matrix.columns = net.Names  # type: ignore
         return fw.FoodWeb(title=title, flow_matrix=flow_matrix, node_df=net)
 
 
-def write_to_SCOR(food_web, scor_path):
+def write_to_SCOR(food_web: fw.FoodWeb, scor_path: str) -> None:
     '''Write foodweb to a SCOR file.
 
     Parameters
@@ -209,7 +207,7 @@ def write_to_SCOR(food_web, scor_path):
         f.write('\n')
 
 
-def write_to_XLS(food_web, filename):
+def write_to_XLS(food_web: fw.FoodWeb, filename: str) -> None:
     '''Write foodweb as an XLS (spreadsheet) file.
 
     Parameters
@@ -223,10 +221,10 @@ def write_to_XLS(food_web, filename):
     pd.DataFrame([food_web.title]).to_excel(writer, sheet_name="Title")
     food_web.node_df.to_excel(writer, sheet_name="Node properties")
     food_web.flow_matrix.to_excel(writer, sheet_name="Internal flows")
-    writer.save()
+    writer.close()
 
 
-def read_from_XLS(filename):
+def read_from_XLS(filename: str) -> fw.FoodWeb:
     '''Read foodweb from an XLS (spreadsheet) file, see examples/data/Richards_Bay_C_Summer.xls.
 
     Parameters
@@ -262,18 +260,18 @@ def read_from_XLS(filename):
                                    'Respiration': np.float64
                                    })
     flow_matrix = pd.read_excel(filename, sheet_name='Internal flows')
-    if not np.array_equal(flow_matrix.columns.values[1:], flow_matrix.Names.values):
+    if not np.array_equal(flow_matrix.columns.values[1:], flow_matrix.Names.values):  # type: ignore
         raise Exception('Flow matrix (Internal flows sheet) should have exactly same rows as columns.')
     names = flow_matrix.Names
     flow_matrix.drop('Names', inplace=True, axis=1)
-    flow_matrix.index = names
-    flow_matrix.columns = names
+    flow_matrix.index = names  # type: ignore
+    flow_matrix.columns = names  # type: ignore
     if (flow_matrix < 0).any().any():
         raise Exception('Flow matrix contains negative values.')
     return fw.FoodWeb(title=title.values[0][1], node_df=node_df, flow_matrix=flow_matrix)
 
 
-def write_to_CSV(food_web, filename):
+def write_to_CSV(food_web: fw.FoodWeb, filename: str) -> None:
     '''Writes a food web to a CSV (spreadsheet) file, using semicolon as a separator.
 
     Parameters
@@ -285,17 +283,16 @@ def write_to_CSV(food_web, filename):
     '''
     data = food_web.flow_matrix
     data = data.join(food_web.node_df[['IsAlive', 'Biomass', 'Export', 'Respiration', 'TrophicLevel']])
-    data = data.append(food_web.node_df.Import)
+    data = data.append(food_web.node_df.Import)  # type: ignore
     data = data.fillna(0.0)
     data.to_csv(filename, sep=';', encoding='utf-8')
 
 
-def read_from_CSV(filename):
+def read_from_CSV(filename: str) -> fw.FoodWeb:
     '''Reads a food web from a CSV (spreadsheet) file.
 
     Parameters
     ----------
-
     filename: string
         Path to the CSV file. The expected format of a semicolon-separated file
         (see examples/data/Richards_Bay_C_Summer):
@@ -312,7 +309,6 @@ def read_from_CSV(filename):
     Returns
     -------
     foodwebs.FoodWeb object
-
     '''
     data = pd.read_csv(filename, sep=';', encoding='utf-8').set_index('Names')
 

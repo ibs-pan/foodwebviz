@@ -1,8 +1,10 @@
 '''Class for foodwebs.'''
+import pandas as pd
 import networkx as nx
 
 import foodwebviz as fw
 from .normalization import normalization_factory
+
 
 
 __all__ = [
@@ -16,7 +18,7 @@ class FoodWeb(object):
     It stores species and flows between them with additional data like Biomass.
     '''
 
-    def __init__(self, title, node_df, flow_matrix):
+    def __init__(self, title: str, node_df: pd.DataFrame, flow_matrix: pd.DataFrame) -> None:
         '''Initialize a foodweb with title, nodes and flow matrix.
             Parameters
             ----------
@@ -44,9 +46,11 @@ class FoodWeb(object):
             self.node_df['TrophicLevel'] = fw.calculate_trophic_levels(self)
         self._graph = self._init_graph()
 
-    def _init_graph(self):
+    def _init_graph(self) -> nx.DiGraph:
         '''Returns networkx.DiGraph initialized using foodweb's flow matrix.'''
-        graph = nx.from_pandas_adjacency(self.get_flow_matrix(boundary=True),  create_using=nx.DiGraph)
+        graph = nx.from_pandas_adjacency(
+            df=self.get_flow_matrix(boundary=True),
+            create_using=nx.DiGraph)
         nx.set_node_attributes(graph, self.node_df.to_dict(orient='index'))
 
         exclude_edges = []
@@ -57,13 +61,16 @@ class FoodWeb(object):
         graph.remove_edges_from(exclude_edges)
         return graph
 
-    def get_diet_matrix(self):
+    def get_diet_matrix(self) -> pd.DataFrame:
         '''Returns a matrix of system flows express as diet proportions=
         =fraction of node inflows this flow contributes'''
         return self.flow_matrix.div(self.flow_matrix.sum(axis=0), axis=1).fillna(0.0)
 
-    def get_graph(self, boundary=False, mark_alive_nodes=False, normalization=None,
-                  no_flows_to_detritus=False):
+    def get_graph(self,
+                  boundary: bool = False,
+                  mark_alive_nodes: bool = False,
+                  normalization: str = 'linear',
+                  no_flows_to_detritus: bool = False) -> nx.DiGraph:
         '''Returns foodweb as networkx.SubGraph View fo networkx.DiGraph.
 
         Parameters
@@ -90,16 +97,23 @@ class FoodWeb(object):
         exclude_edges = []
         if no_flows_to_detritus:
             not_alive_nodes = self.node_df[~self.node_df.IsAlive].index.values
-            exclude_edges = [edge for edge in self._graph.edges() if edge[1] in not_alive_nodes]
+            exclude_edges = [
+                edge for edge in self._graph.edges() if edge[1] in not_alive_nodes]
 
-        g = nx.restricted_view(self._graph.copy(), exclude_nodes, exclude_edges)
+        g = nx.restricted_view(
+            G=self._graph.copy(),
+            nodes=exclude_nodes,
+            edges=exclude_edges)
         if mark_alive_nodes:
             g = nx.relabel_nodes(g, fw.is_alive_mapping(self))
         g = normalization_factory(g, norm_type=normalization)
         return g
 
-    def get_flows(self, boundary=False, mark_alive_nodes=False, normalization=None,
-                  no_flows_to_detritus=False):
+    def get_flows(self,
+                  boundary: bool = False,
+                  mark_alive_nodes: bool = False,
+                  normalization: str = 'linear',
+                  no_flows_to_detritus: bool = False) -> list[tuple[str, str, dict[str, float]]]:
         '''Returns a list of all flows within foodweb.
 
         Parameters
@@ -126,7 +140,7 @@ class FoodWeb(object):
         return (self.get_graph(boundary, mark_alive_nodes, normalization, no_flows_to_detritus)
                 .edges(data=True))
 
-    def get_flow_matrix(self, boundary=False, to_alive_only=False):
+    def get_flow_matrix(self, boundary: bool = False, to_alive_only: bool = False) -> pd.DataFrame:
         '''Returns the flow (adjacency) matrix.
 
         Parameters
@@ -153,9 +167,9 @@ class FoodWeb(object):
             return flow_matrix
 
         flow_matrix_with_boundary = self.flow_matrix.copy()
-        flow_matrix_with_boundary.loc['Import'] = self.node_df.Import.to_dict()
-        flow_matrix_with_boundary.loc['Export'] = self.node_df.Export.to_dict()
-        flow_matrix_with_boundary.loc['Respiration'] = self.node_df.Respiration.to_dict()
+        flow_matrix_with_boundary.loc['Import'] = self.node_df.Import.to_dict()  # type: ignore
+        flow_matrix_with_boundary.loc['Export'] = self.node_df.Export.to_dict()  # type: ignore
+        flow_matrix_with_boundary.loc['Respiration'] = self.node_df.Respiration.to_dict()  # type: ignore
         return (
             flow_matrix_with_boundary
             .join(self.node_df.Import)
@@ -163,19 +177,25 @@ class FoodWeb(object):
             .join(self.node_df.Respiration)
             .fillna(0.0))
 
-    def get_links_number(self):
+    def get_links_number(self) -> int:
         '''Returns the number of nonzero flows.
         '''
         return self.get_graph(False).number_of_edges()
 
-    def get_flow_sum(self):
+    def get_flow_sum(self) -> pd.Series:
         '''Returns the sum of all flows.
         '''
         return self.get_flow_matrix(boundary=True).sum()
 
-    def get_norm_node_prop(self):
-        num_node_prop = self.node_df[["Biomass", "Import", "Export", "Respiration"]]
+    def get_norm_node_prop(self) -> pd.DataFrame:
+        cols = ["Biomass", "Import", "Export", "Respiration"]
+        num_node_prop = self.node_df[cols]
         return num_node_prop.div(num_node_prop.sum(axis=0), axis=1)
+
+    def get_outflows_to_living(self) -> pd.Series:
+        # node's system outflows to living
+        # TODO doc
+        return self.flow_matrix[self.node_df[self.node_df.IsAlive].index].sum(axis='columns')
 
     def __str__(self):
         return f'''
@@ -188,8 +208,3 @@ class FoodWeb(object):
                 {self.node_df["Respiration"]}\n
                 {self.node_df["TrophicLevel"]}\n
                 '''
-
-    def get_outflows_to_living(self):
-        # node's system outflows to living
-        # TODO doc
-        return self.flow_matrix[self.node_df[self.node_df.IsAlive].index].sum(axis='columns')
