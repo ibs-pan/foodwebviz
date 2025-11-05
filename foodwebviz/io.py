@@ -122,7 +122,7 @@ def read_from_SCOR(scor_path):
             if line[0].strip() == '-1':
                 break
             flow_matrix.at[int(line[0]), int(line[1])] = float(line[2])
-        flow_matrix = flow_matrix.fillna(0.0)
+        flow_matrix = flow_matrix.infer_objects(copy=False).fillna(0.0)
         flow_matrix.index = net.Names
         flow_matrix.columns = net.Names
         return fw.FoodWeb(title=title, flow_matrix=flow_matrix, node_df=net)
