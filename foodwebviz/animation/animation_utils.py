@@ -89,19 +89,19 @@ def init_particles(network_image, include_imports, include_exports, max_part, ma
         for j in xs.index:
             # first the system flows
             if partNumber_sys_flows.loc[i, j] != 0.0:  # we do nothing for zero flows
-                particles = particles.append(
+                particles = pd.concat([particles,
                     particles_in_one_flow(partNumber_sys_flows.loc[i, j], xs[i], xs[j], ys[i], ys[j],
-                                          start_node=i, max_part=max_part, map_fun=map_fun))
+                                          start_node=i, max_part=max_part, map_fun=map_fun)],axis=0, join='outer') 
 
         if include_imports:
-            particles = particles.append(
+            particles = pd.concat([particles,
                 particles_in_one_flow(partNumber_imports.loc[i], xs[i], xs[i], 0.0, ys[i],
-                                      start_node=i, max_part=max_part, map_fun=map_fun))
+                                      start_node=i, max_part=max_part, map_fun=map_fun)],axis=0, join='outer') 
         if include_exports:
-            particles = particles.append(
+            particles = pd.concat([particles,
                 particles_in_one_flow(partNumber_exports.loc[i], xs[i],
                                       0.0 if xs[i] < 50 else 100.0, ys[i], ys[i],
-                                      start_node=i, max_part=max_part, map_fun=map_fun))
+                                      start_node=i, max_part=max_part, map_fun=map_fun)],axis=0, join='outer') 
     return particles.reset_index()
 
 
